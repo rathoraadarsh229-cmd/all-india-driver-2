@@ -1,0 +1,98 @@
+{
+  "entities": {
+    "DriverProfile": {
+      "title": "Driver Profile",
+      "description": "A verified professional driver registered on the platform.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique driver ID" },
+        "name": { "type": "string", "description": "Full name of the driver" },
+        "maskedName": { "type": "string", "description": "Masked name for privacy before unlocking" },
+        "phone": { "type": "string", "description": "Mobile contact number of the driver" },
+        "maskedPhone": { "type": "string", "description": "Masked phone number for privacy" },
+        "experience": { "type": "integer", "description": "Years of professional commercial experience" },
+        "location": { "type": "string", "description": "Region / state-district-village name" },
+        "vehicleCategory": { "type": "string", "enum": ["Car", "Commercial", "Heavy Trailer"] },
+        "vehicleType": { "type": "string", "description": "Detailed truck or vehicle descriptor" },
+        "rating": { "type": "number" },
+        "tripsCompleted": { "type": "integer" },
+        "salaryExpectation": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "dlNumber": { "type": "string", "description": "Driving License identification" },
+        "vehicleNo": { "type": "string" },
+        "isVerified": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["Online", "Offline"] },
+        "verifiedBadge": { "type": "boolean" },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "phone", "location"]
+    },
+    "OwnerProfile": {
+      "title": "Owner Profile",
+      "description": "Logistics fleet owner profile or contractor details.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "companyName": { "type": "string" },
+        "fleetSize": { "type": "string" },
+        "city": { "type": "string" },
+        "state": { "type": "string" },
+        "gstNumber": { "type": "string" },
+        "role": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "verified": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["uid", "name", "companyName"]
+    },
+    "ChatChannel": {
+      "title": "Chat Channel",
+      "description": "Encrypted direct messages between Transporter owner and Driver partner",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Composite path id of the channel" },
+        "driverId": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "driverName": { "type": "string" },
+        "ownerName": { "type": "string" },
+        "lastMessage": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "driverId", "ownerId"]
+    },
+    "ChatMessage": {
+      "title": "Chat Message",
+      "description": "Individual message inside a Chat Channel",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderRole": { "type": "string" },
+        "text": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "senderId", "text", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/drivers/{driverId}": {
+      "schema": "DriverProfile",
+      "description": "The active marketplace collection of drivers"
+    },
+    "/owners/{ownerId}": {
+      "schema": "OwnerProfile",
+      "description": "Transporters and contractor enterprise directories"
+    },
+    "/chats/{chatId}": {
+      "schema": "ChatChannel",
+      "description": "Secure connection list for driver hiring chats"
+    },
+    "/chats/{chatId}/messages/{messageId}": {
+      "schema": "ChatMessage",
+      "description": "Subcollection holding private live discussions"
+    }
+  }
+}

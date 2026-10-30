@@ -1,0 +1,347 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+:root {
+  /* Brand Accent Tokens */
+  --primary: #F59E0B;
+  --primary-hover: #D97706;
+  --primary-text: #0F172A;
+  --success: #16A34A;
+  --danger: #DC2626;
+  --info: #2563EB;
+
+  /* 3-Role Theme Colors */
+  --driver-blue: #0087FF;
+  --driver-cyan: #00B4D8;
+  --driver-bg: #0A111E;
+  --driver-card: #0D1627;
+  --driver-border: rgba(0, 135, 255, 0.45);
+  --driver-glow: 0 0 25px rgba(0, 135, 255, 0.35);
+
+  --owner-green: #10B981;
+  --owner-emerald: #22C55E;
+  --owner-bg: #071A12;
+  --owner-card: #0A2219;
+  --owner-border: rgba(16, 185, 129, 0.45);
+  --owner-glow: 0 0 25px rgba(16, 185, 129, 0.35);
+
+  --mechanic-purple: #A855F7;
+  --mechanic-violet: #9333EA;
+  --mechanic-bg: #140B1E;
+  --mechanic-card: #1D102C;
+  --mechanic-border: rgba(168, 85, 247, 0.45);
+  --mechanic-glow: 0 0 25px rgba(168, 85, 247, 0.35);
+
+  /* Light Theme */
+  --bg: #F8FAFC;
+  --card: #FFFFFF;
+  --card-border: #E2E8F0;
+  --card-subtle: #F1F5F9;
+  --text: #0F172A;
+  --muted: #64748B;
+  --input-bg: #FFFFFF;
+  --input-border: #CBD5E1;
+  --input-text: #0F172A;
+  --badge-bg: #F1F5F9;
+}
+
+html.dark {
+  /* Dark Theme */
+  --bg: #0B0B0C;
+  --card: #16161A;
+  --card-border: rgba(255, 255, 255, 0.12);
+  --card-subtle: #1A1A22;
+  --text: #F8FAFC;
+  --muted: #94A3B8;
+  --input-bg: #1A1A22;
+  --input-border: rgba(255, 255, 255, 0.18);
+  --input-text: #F8FAFC;
+  --badge-bg: rgba(255, 255, 255, 0.06);
+}
+
+html, body, #root {
+  min-height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --color-primary-dark: #0B0B0C;
+  --color-brand-red: #E10600;
+  --color-accent-red: #E10600;
+  --color-card-dark: #121214;
+  --color-card-border: rgba(255, 255, 255, 0.12);
+  --color-navy: #0F172A;
+  --color-brand-orange: #F59E0B;
+}
+
+/* ============================================================================== */
+/* Standard App Containers (Mobile-first)                                          */
+/* ============================================================================== */
+.app-container {
+  width: 100%;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .app-container {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+.form-container {
+  width: 100%;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .form-container {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+/* Touch Targets: minimum 48px height, 16px font to prevent mobile zoom */
+input[type="text"],
+input[type="tel"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+select,
+textarea {
+  font-size: 16px !important;
+  min-height: 48px;
+  box-sizing: border-box;
+}
+
+/* Primary Button Helper with high contrast */
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-text);
+  min-height: 48px;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25);
+  cursor: pointer;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.35);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ============================================================================== */
+/* High contrast input text handling for Light & Dark mode                        */
+/* ============================================================================== */
+input, select, textarea {
+  caret-color: var(--primary);
+}
+
+:root:not(.dark) input:not(.text-white),
+:root:not(.dark) select:not(.text-white),
+:root:not(.dark) textarea:not(.text-white) {
+  color: #0F172A;
+}
+
+html.dark input,
+html.dark select,
+html.dark textarea {
+  color: #FFFFFF;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--muted) !important;
+}
+
+/* Hero MotoCorp Carbon Grid Background */
+.hero-carbon-bg {
+  background-color: #0B0B0C;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.12) 0%, transparent 65%),
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 32px 32px, 32px 32px;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Leaflet dark styling */
+.leaflet-container {
+  background-color: #121214 !important;
+  font-family: inherit;
+}
+
+/* ============================================================================== */
+/* 3-Role Theme Modern Dark UI Styles (Blue Driver, Green Owner, Purple Mechanic) */
+/* ============================================================================== */
+
+/* Role 1: Driver - Electric Blue */
+.card-driver-theme {
+  background: radial-gradient(ellipse at top, #0E1A30 0%, #080D17 70%, #05080E 100%);
+  border: 1.5px solid rgba(0, 135, 255, 0.55);
+  box-shadow: 0 0 25px rgba(0, 135, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.25s ease;
+}
+.card-driver-theme:hover {
+  border-color: rgba(0, 180, 216, 0.9);
+  box-shadow: 0 0 35px rgba(0, 180, 216, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+.btn-driver {
+  background: linear-gradient(135deg, #0066FF 0%, #00B4D8 100%);
+  color: #FFFFFF !important;
+  min-height: 48px;
+  font-weight: 700;
+  border-radius: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 0 20px rgba(0, 135, 255, 0.5);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+}
+.btn-driver:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0052CC 0%, #0096B7 100%);
+  box-shadow: 0 0 30px rgba(0, 180, 216, 0.7);
+  transform: translateY(-1px);
+}
+.input-driver-theme {
+  background-color: #0A1424 !important;
+  border: 1px solid rgba(0, 135, 255, 0.35) !important;
+  color: #FFFFFF !important;
+}
+.input-driver-theme:focus {
+  border-color: #00B4D8 !important;
+  box-shadow: 0 0 12px rgba(0, 180, 216, 0.35) !important;
+}
+
+/* Role 2: Owner - Emerald Green */
+.card-owner-theme {
+  background: radial-gradient(ellipse at top, #0A2419 0%, #06170F 70%, #030C07 100%);
+  border: 1.5px solid rgba(16, 185, 129, 0.55);
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.25s ease;
+}
+.card-owner-theme:hover {
+  border-color: rgba(34, 197, 94, 0.9);
+  box-shadow: 0 0 35px rgba(34, 197, 94, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+.btn-owner {
+  background: linear-gradient(135deg, #059669 0%, #10B981 100%);
+  color: #FFFFFF !important;
+  min-height: 48px;
+  font-weight: 700;
+  border-radius: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+}
+.btn-owner:hover:not(:disabled) {
+  background: linear-gradient(135deg, #047857 0%, #059669 100%);
+  box-shadow: 0 0 30px rgba(34, 197, 94, 0.7);
+  transform: translateY(-1px);
+}
+.input-owner-theme {
+  background-color: #081B12 !important;
+  border: 1px solid rgba(16, 185, 129, 0.35) !important;
+  color: #FFFFFF !important;
+}
+.input-owner-theme:focus {
+  border-color: #10B981 !important;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.35) !important;
+}
+
+/* Role 3: Mechanic - Electric Purple */
+.card-mechanic-theme {
+  background: radial-gradient(ellipse at top, #1E102B 0%, #13091B 70%, #0A040F 100%);
+  border: 1.5px solid rgba(168, 85, 247, 0.55);
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.25s ease;
+}
+.card-mechanic-theme:hover {
+  border-color: rgba(192, 132, 252, 0.9);
+  box-shadow: 0 0 35px rgba(192, 132, 252, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+.btn-mechanic {
+  background: linear-gradient(135deg, #7E22CE 0%, #A855F7 100%);
+  color: #FFFFFF !important;
+  min-height: 48px;
+  font-weight: 700;
+  border-radius: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+}
+.btn-mechanic:hover:not(:disabled) {
+  background: linear-gradient(135deg, #6B21A8 0%, #9333EA 100%);
+  box-shadow: 0 0 30px rgba(192, 132, 252, 0.7);
+  transform: translateY(-1px);
+}
+.input-mechanic-theme {
+  background-color: #170C22 !important;
+  border: 1px solid rgba(168, 85, 247, 0.35) !important;
+  color: #FFFFFF !important;
+}
+.input-mechanic-theme:focus {
+  border-color: #C084FC !important;
+  box-shadow: 0 0 12px rgba(192, 132, 252, 0.35) !important;
+}

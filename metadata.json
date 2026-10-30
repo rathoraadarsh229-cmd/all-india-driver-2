@@ -1,0 +1,9 @@
+{
+  "name": "ALL INDIA DRIVER APP",
+  "description": "A premium full-flow driver companion app with trip searches, live location tracking, and an encrypted chat room for instant booking negotiation.",
+  "requestFramePermissions": [
+    "microphone",
+    "geolocation"
+  ],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
