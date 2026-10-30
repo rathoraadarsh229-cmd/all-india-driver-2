@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { WebsiteView } from './components/WebsiteView';
 import { OnboardingFlow } from './components/OnboardingFlow';
 import DriverFlow from './components/DriverFlow';
 import OwnerFlow from './components/OwnerFlow';
@@ -35,6 +36,21 @@ import {
 } from 'lucide-react';
 
 export default function App() {
+  // App navigation bar mobile drawer toggle
+  const [appNavMenuOpen, setAppNavMenuOpen] = useState(false);
+  // Master View Mode: 'app' (Default: Interactive Portal) or 'website' (Marketing Site)
+  const [viewMode, setViewMode] = useState<'website' | 'app'>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('site') === '1' || window.location.hash === '#site') {
+        return 'website';
+      }
+      const saved = localStorage.getItem('aid_view_mode');
+      if (saved === 'website') return 'website';
+    }
+    return 'app';
+  });
+
   // App Navigation & Role States - Default to 'intro' (Welcome Screen) for onboarding
   const [currentScreen, setCurrentScreen] = useState<AppScreen>(() => {
     try {
@@ -87,109 +103,140 @@ export default function App() {
   }, [theme]);
 
   const toggleTheme = useCallback(() => {
-    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   }, []);
 
-  const [userEmail, setUserEmail] = useState<string>(() => {
-    try {
-      const email = localStorage.getItem('all_india_driver_user_email') || '';
-      // Purge fake auto-generated @driverapp.in email
-      if (email.includes('@driverapp.in')) {
-        const phone = email.split('@')[0];
-        localStorage.setItem('all_india_driver_user_email', `+91 ${phone}`);
-        localStorage.setItem('all_india_driver_verified_phone', phone);
-        return `+91 ${phone}`;
-      }
-      return email;
-    } catch {
-      return '';
-    }
-  });
-
-  const [authType, setAuthType] = useState<UserAuthType>('gmail');
-
-  // Owner Profile Data (No mock names or fake numbers)
-  const [ownerData, setOwnerData] = useState<OwnerData>(() => {
-    try {
-      const saved = localStorage.getItem('all_india_driver_owner_data') || localStorage.getItem('aid_saved_owner_profile');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return {
-      name: '',
-      companyName: '',
-      fleetSize: '1-5 Trucks',
-      city: '',
-      state: '',
-      role: 'owner'
-    };
-  });
-
-  // Driver Profile Data (Zero fake numbers, views, or ratings)
-  const [driverData, setDriverData] = useState<any>(() => {
-    try {
-      const saved = localStorage.getItem('all_india_driver_driver_data') || localStorage.getItem('aid_saved_driver_profile');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.views === 18) parsed.views = 0;
-        if (parsed.rating === 5 || parsed.rating === '5.0') delete parsed.rating;
-        return parsed;
-      }
-    } catch {}
-    return {
-      name: '',
-      experience: 0,
-      location: '',
-      vehicleCategory: 'Heavy Trailer',
-      vehicleType: '18-Wheeler Trailer',
-      photoUrl: '',
-      dlNo: ''
-    };
-  });
-
-  // Live Database Records from InsForge (Zero fake hardcoded drivers)
-  const [driversList, setDriversList] = useState<DriverProfile[]>([]);
-  const [selectedDriver, setSelectedDriver] = useState<DriverProfile | null>(null);
-  const [unlockedDriverIds, setUnlockedDriverIds] = useState<string[]>([]);
-  const [replacementCredits, setReplacementCredits] = useState<number>(0);
-  const [reportedDriverIds, setReportedDriverIds] = useState<string[]>([]);
-
-  // Emergency 24x7 Roadside SOS Modal
-  const [showNearbyMechanicModal, setShowNearbyMechanicModal] = useState<boolean>(false);
-  const [showAiChatModal, setShowAiChatModal] = useState<boolean>(false);
-
-  // Chat & Communication States
-  const [chatPerspective, setChatPerspective] = useState<'owner' | 'driver' | 'mechanic'>('owner');
-  const [selectedOwnerJob, setSelectedOwnerJob] = useState<OwnerJob | null>(null);
-  const [selectedMechanic, setSelectedMechanic] = useState<MechanicProfile | null>(null);
-  const [selectedMechanicHelpRequest, setSelectedMechanicHelpRequest] = useState<MechanicHelpRequest | null>(null);
-  const [chatTargetType, setChatTargetType] = useState<'driver' | 'owner' | 'mechanic'>('driver');
-
-  // Fetch drivers from InsForge live backend
-  useEffect(() => {
-    let isCancelled = false;
-    const loadDrivers = async () => {
-      try {
-        const live = await fetchDriversFromInsForge();
-        if (!isCancelled && Array.isArray(live)) {
-          setDriversList(live);
-        }
-      } catch (err) {
-        console.warn('InsForge driver fetch notification:', err);
-      }
-    };
-    loadDrivers();
-    return () => {
-      isCancelled = true;
-    };
-  }, []);
-
-  // Synchronize language choice with localStorage
   const handleSetLanguage = useCallback((lang: string) => {
     setSelectedLanguage(lang);
     try {
       localStorage.setItem('aid_selected_lang', lang);
     } catch {}
   }, []);
+
+  const [userEmail, setUserEmail] = useState<string>(() => {
+    try {
+      return localStorage.getItem('all_india_driver_user_email') || 'rathoraadarsh229@gmail.com';
+    } catch {
+      return 'rathoraadarsh229@gmail.com';
+    }
+  });
+  const [authType, setAuthType] = useState<UserAuthType>(() => {
+    try {
+      const saved = localStorage.getItem('all_india_driver_auth_type');
+      return (saved === 'guest' || saved === 'gmail') ? saved : 'gmail';
+    } catch {
+      return 'gmail';
+    }
+  });
+
+  // Modals & Chat Target States
+  const [showNearbyMechanicModal, setShowNearbyMechanicModal] = useState(false);
+  const [showAiChatModal, setShowAiChatModal] = useState(false);
+  const [chatPerspective, setChatPerspective] = useState<'driver' | 'owner'>('owner');
+  const [selectedOwnerJob, setSelectedOwnerJob] = useState<OwnerJob | null>(null);
+  const [selectedMechanic, setSelectedMechanic] = useState<MechanicProfile | null>(null);
+  const [selectedMechanicHelpRequest, setSelectedMechanicHelpRequest] = useState<MechanicHelpRequest | null>(null);
+  const [chatTargetType, setChatTargetType] = useState<'driver' | 'mechanic'>('driver');
+
+  // Shared Drivers List across Website & App
+  const [driversList, setDriversList] = useState<DriverProfile[]>(() => {
+    try {
+      const cached = localStorage.getItem('aid_registered_drivers');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return [];
+  });
+
+  // Fetch Drivers from InsForge on Mount
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const remoteDrivers = await fetchDriversFromInsForge();
+        if (isMounted && remoteDrivers && remoteDrivers.length > 0) {
+          const valid = remoteDrivers.map(d => ({
+            id: String(d.id || Math.random()),
+            name: d.name || 'चालक',
+            phone: d.phone || '',
+            experience: d.experience || 1,
+            location: d.city ? `${d.city}, ${d.state || ''}` : 'संपूर्ण भारत',
+            vehicleCategory: d.vehicleCategory || 'Commercial',
+            vehicleType: d.vehicleType || 'Truck',
+            photoUrl: d.photoUrl || '',
+            idType: 'aadhaar' as const,
+            aadhaarNumber: '1234',
+            rating: 4.8,
+            status: 'available' as const,
+            lat: 21.8129,
+            lng: 80.1836,
+            badges: ['Verified'],
+            isExample: false
+          }));
+          setDriversList(valid);
+          try {
+            localStorage.setItem('aid_registered_drivers', JSON.stringify(valid));
+          } catch {}
+        }
+      } catch (err) {
+        console.error('Fetch drivers failed:', err);
+      }
+    })();
+    return () => { isMounted = false; };
+  }, []);
+
+  // Shared Owner Data
+  const [ownerData, setOwnerData] = useState<OwnerData>(() => {
+    try {
+      const saved = localStorage.getItem('aid_saved_owner_profile');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return {
+      name: '',
+      companyName: '',
+      fleetSize: '1-2 Vehicles',
+      city: 'Balaghat',
+      state: 'Madhya Pradesh',
+      role: 'owner',
+      photoUrl: '',
+      verified: false,
+      vehicleType: 'Car',
+      vehiclePhotos: []
+    };
+  });
+
+  // Shared Driver Data
+  const [driverData, setDriverData] = useState<DriverProfile>(() => {
+    try {
+      const saved = localStorage.getItem('aid_saved_driver_profile');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return {
+      name: '',
+      phone: '',
+      experience: 0,
+      location: '',
+      vehicleCategory: 'Commercial',
+      vehicleType: 'Chota Hathi / Tata Ace',
+      photoUrl: '',
+      idType: 'aadhaar',
+      aadhaarNumber: '',
+      rating: 5.0,
+      status: 'available',
+      lat: 21.8129,
+      lng: 80.1836,
+      badges: [],
+      isExample: false
+    };
+  });
+
+  // Selected Driver for Owner Flow
+  const [selectedDriver, setSelectedDriver] = useState<DriverProfile | null>(null);
+  const [unlockedDriverIds, setUnlockedDriverIds] = useState<string[]>([]);
+  const [replacementCredits, setReplacementCredits] = useState<number>(3);
+  const [reportedDriverIds, setReportedDriverIds] = useState<string[]>([]);
 
   // Deep Link Handler: Launch App Screen
   const handleLaunchApp = useCallback((
@@ -210,6 +257,7 @@ export default function App() {
       else if (role === 'mechanic' || userRole === 'mechanic') setCurrentScreen('mechanic-dashboard');
       else setCurrentScreen('role-selection');
     }
+    setViewMode('app');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [userRole]);
 
@@ -218,12 +266,14 @@ export default function App() {
     setSelectedDriver(driver);
     setUserRole('owner');
     setCurrentScreen('driver-detail');
+    setViewMode('app');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   // Deep Link Handler: Open 24x7 SOS
   const handleOpenSOS = useCallback(() => {
     setShowNearbyMechanicModal(true);
+    setViewMode('app');
   }, []);
 
   // Deep Link Handler: Book Driver with Real Fare Estimate
@@ -254,21 +304,261 @@ export default function App() {
     setUserRole('owner');
     setSelectedOwnerJob(bookingJob);
     setCurrentScreen('owner-dashboard');
+    setViewMode('app');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [ownerData]);
 
-  // Pure Dedicated Mobile App Viewport (Matching all-india-driver-1 structure)
+  // Render Official Marketing Website
+  if (viewMode === 'website') {
+    return (
+      <WebsiteView
+        driversList={driversList}
+        onLaunchApp={handleLaunchApp}
+        onOpenDriverProfile={handleOpenDriverProfile}
+        onOpenSOS={handleOpenSOS}
+        onBookWithEstimate={handleBookWithEstimate}
+        theme={theme}
+        toggleTheme={toggleTheme}
+      />
+    );
+  }
+
+  // Render Realtime App Portal
   return (
-    <div className="min-h-screen h-full w-full bg-[#0B0B0C] flex flex-col items-center justify-center p-0 md:p-3 font-sans antialiased selection:bg-[#FFC400] selection:text-black transition-colors duration-200">
-      {/* Mobile Device Frame on Desktop / Full Screen on Mobile */}
-      <div 
-        className="w-full max-w-[480px] h-screen md:h-[840px] max-h-screen md:max-h-[94vh] bg-[#16161A] md:rounded-[32px] md:shadow-2xl md:border md:border-white/10 flex flex-col overflow-hidden relative shadow-md"
-        id="full-app-frame"
-      >
-        <div className="flex-1 bg-inherit relative flex flex-col overflow-hidden overflow-y-auto" id="viewport">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col font-sans selection:bg-[var(--primary)] selection:text-[var(--primary-text)] transition-colors duration-200">
+      {/* Top Banner: Connected Navigation Bar Across App & Website */}
+      {!['splash', 'intro', 'login', 'role-selection'].includes(currentScreen) && (
+      <header className="sticky top-0 z-50 bg-[var(--card)]/95 backdrop-blur-md border-b border-[var(--card-border)] px-4 sm:px-6 py-2.5 text-xs transition-colors duration-200">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
           
-          {/* Main Interactive App Workspaces */}
-          <main className="flex-1 flex flex-col h-full">
+          {/* Left: Brand / Home Link */}
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => {
+                setViewMode('website');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="flex items-center gap-2 text-[var(--text)] hover:text-[var(--primary)] font-bold tracking-wider transition-colors group cursor-pointer"
+            >
+              <div className="w-8 h-8 rounded-lg bg-[var(--primary)] flex items-center justify-center text-[var(--primary-text)] shadow-sm">
+                <Truck className="w-4 h-4" />
+              </div>
+              <span className="font-display font-bold text-sm tracking-tight">ALL INDIA DRIVER</span>
+            </button>
+
+            <span className="hidden lg:inline text-[var(--muted)] opacity-40">|</span>
+
+            {/* Quick Links to Website Sections */}
+            <nav className="hidden lg:flex items-center gap-4 text-[12px] font-medium text-[var(--muted)]">
+              <button
+                onClick={() => {
+                  setViewMode('website');
+                  setTimeout(() => {
+                    document.getElementById('overview')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }}
+                className="hover:text-[var(--text)] transition-colors cursor-pointer"
+              >
+                🏠 होम (Home)
+              </button>
+              <button
+                onClick={() => {
+                  setViewMode('website');
+                  setTimeout(() => {
+                    document.getElementById('vehicles')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }}
+                className="hover:text-[var(--text)] transition-colors cursor-pointer"
+              >
+                🚛 वाहन बेड़ा (Fleet)
+              </button>
+              <button
+                onClick={() => {
+                  setViewMode('website');
+                  setTimeout(() => {
+                    document.getElementById('calculator')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }}
+                className="hover:text-[var(--text)] transition-colors cursor-pointer"
+              >
+                🧮 किराया कैलकुलेटर
+              </button>
+            </nav>
+          </div>
+
+          {/* Center/Right: Role Switchers, AI, SOS & Theme Toggle */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            
+            {/* Direct Role Portal Pills */}
+            <div className="hidden sm:flex items-center bg-[var(--card-subtle)] border border-[var(--card-border)] rounded-xl p-1 gap-1">
+              <button
+                onClick={() => handleLaunchApp('driver-dashboard', 'driver')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  userRole === 'driver' && currentScreen === 'driver-dashboard'
+                    ? 'bg-[var(--primary)] text-[var(--primary-text)] shadow-sm font-bold'
+                    : 'text-[var(--muted)] hover:text-[var(--text)]'
+                }`}
+              >
+                🧑‍✈️ चालक
+              </button>
+
+              <button
+                onClick={() => handleLaunchApp('owner-dashboard', 'owner')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  userRole === 'owner' && currentScreen === 'owner-dashboard'
+                    ? 'bg-[var(--primary)] text-[var(--primary-text)] shadow-sm font-bold'
+                    : 'text-[var(--muted)] hover:text-[var(--text)]'
+                }`}
+              >
+                🏢 मालिक
+              </button>
+
+              <button
+                onClick={() => handleLaunchApp('mechanic-dashboard', 'mechanic')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  userRole === 'mechanic' && currentScreen === 'mechanic-dashboard'
+                    ? 'bg-[var(--primary)] text-[var(--primary-text)] shadow-sm font-bold'
+                    : 'text-[var(--muted)] hover:text-[var(--text)]'
+                }`}
+              >
+                🔧 मैकेनिक
+              </button>
+            </div>
+
+            {/* 24x7 AI Chat Assistant (100% Free - ₹0 Charge) */}
+            <button
+              onClick={() => setShowAiChatModal(true)}
+              className="flex items-center gap-1.5 bg-[var(--card-subtle)] hover:border-[var(--primary)] text-[var(--text)] border border-[var(--card-border)] px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer min-h-[38px]"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[var(--primary)]" />
+              <span className="hidden sm:inline font-bold">24x7 AI सारथी</span>
+              <span className="sm:hidden font-bold">AI</span>
+            </button>
+
+            {/* 24x7 SOS Action (Danger Red reserved for emergency) */}
+            <button
+              onClick={() => setShowNearbyMechanicModal(true)}
+              className="flex items-center gap-1.5 bg-[var(--danger)] hover:bg-[#b91c1c] text-white px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-md shadow-red-500/25 transition-all cursor-pointer min-h-[38px]"
+            >
+              <AlertTriangle className="w-3.5 h-3.5 text-white animate-pulse" />
+              <span>24x7 SOS</span>
+            </button>
+
+            {/* Light / Dark Mode Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-xl bg-[var(--card-subtle)] text-[var(--text)] hover:text-[var(--primary)] border border-[var(--card-border)] transition-all cursor-pointer flex items-center justify-center min-h-[38px] min-w-[38px]"
+              title={theme === 'dark' ? 'Light mode (दिन का मोड)' : 'Dark mode (रात का मोड)'}
+              aria-label="Toggle Theme"
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-slate-700" />
+              )}
+            </button>
+
+            {/* Mobile Nav Hamburger */}
+            <button
+              onClick={() => setAppNavMenuOpen(!appNavMenuOpen)}
+              className="lg:hidden p-2 text-[var(--text)] rounded-xl bg-[var(--card-subtle)] border border-[var(--card-border)] min-h-[38px] min-w-[38px] flex items-center justify-center"
+              aria-label="Toggle Navigation"
+            >
+              {appNavMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Navigation Drawer inside App Mode */}
+        {appNavMenuOpen && (
+          <div className="lg:hidden mt-2 pt-2 border-t border-[var(--card-border)] space-y-1.5 pb-2">
+            <button
+              onClick={() => {
+                setAppNavMenuOpen(false);
+                setViewMode('website');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-[var(--text)] hover:bg-[var(--card-subtle)]"
+            >
+              🏠 वेबसाइट होम (Back to Website Home)
+            </button>
+            <button
+              onClick={() => {
+                setAppNavMenuOpen(false);
+                setViewMode('website');
+                setTimeout(() => {
+                  document.getElementById('vehicles')?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }}
+              className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-[var(--text)] hover:bg-[var(--card-subtle)]"
+            >
+              🚛 वाहन बेड़ा (Fleet 2W to 40W+)
+            </button>
+            <button
+              onClick={() => {
+                setAppNavMenuOpen(false);
+                setViewMode('website');
+                setTimeout(() => {
+                  document.getElementById('calculator')?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }}
+              className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-[var(--text)] hover:bg-[var(--card-subtle)]"
+            >
+              🧮 किराया कैलकुलेटर (Fare & Bata)
+            </button>
+            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[var(--card-border)]">
+              <button
+                onClick={() => {
+                  setAppNavMenuOpen(false);
+                  handleLaunchApp('driver-dashboard', 'driver');
+                }}
+                className={`py-2 text-center text-xs rounded-lg border border-[var(--card-border)] ${
+                  userRole === 'driver' ? 'bg-[var(--primary)] text-[var(--primary-text)] font-bold' : 'bg-[var(--card-subtle)] text-[var(--text)] font-medium'
+                }`}
+              >
+                🧑‍✈️ चालक
+              </button>
+              <button
+                onClick={() => {
+                  setAppNavMenuOpen(false);
+                  handleLaunchApp('owner-dashboard', 'owner');
+                }}
+                className={`py-2 text-center text-xs rounded-lg border border-[var(--card-border)] ${
+                  userRole === 'owner' ? 'bg-[var(--primary)] text-[var(--primary-text)] font-bold' : 'bg-[var(--card-subtle)] text-[var(--text)] font-medium'
+                }`}
+              >
+                🏢 मालिक
+              </button>
+              <button
+                onClick={() => {
+                  setAppNavMenuOpen(false);
+                  handleLaunchApp('mechanic-dashboard', 'mechanic');
+                }}
+                className={`py-2 text-center text-xs rounded-lg border border-[var(--card-border)] ${
+                  userRole === 'mechanic' ? 'bg-[var(--primary)] text-[var(--primary-text)] font-bold' : 'bg-[var(--card-subtle)] text-[var(--text)] font-medium'
+                }`}
+              >
+                🔧 मैकेनिक
+              </button>
+            </div>
+            {/* Theme switch in mobile menu */}
+            <div className="pt-2 border-t border-[var(--card-border)] flex items-center justify-between px-2">
+              <span className="text-xs text-[var(--muted)] font-medium">थीम बदलें (Theme)</span>
+              <button
+                onClick={toggleTheme}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--card-subtle)] border border-[var(--card-border)] text-xs text-[var(--text)] font-medium"
+              >
+                {theme === 'dark' ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-slate-700" />}
+                <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </header>
+      )}
+
+      {/* Main Interactive App Workspaces */}
+      <main className="flex-1">
         {/* 1. Onboarding & Registration Screens */}
         {(currentScreen === 'splash' ||
           currentScreen === 'intro' ||
@@ -397,9 +687,7 @@ export default function App() {
             currentUserPhone={ownerData.phone || driverData.phone || ''}
           />
         )}
-          </main>
-        </div>
-      </div>
+      </main>
 
       {/* 24x7 Roadside Emergency Breakdown SOS Modal */}
       <NearbyMechanicModal
@@ -416,13 +704,23 @@ export default function App() {
         }}
       />
 
-      {/* 24x7 Highway AI Chat Assistant */}
+      {/* 24x7 Highway AI Chat Assistant (100% Free - ₹0 Charge) */}
       <HighwayAiChatModal
         isOpen={showAiChatModal}
         onClose={() => setShowAiChatModal(false)}
         onOpenSOS={() => setShowNearbyMechanicModal(true)}
-        onOpenCalculator={() => {}}
-        onOpenFleet={() => {}}
+        onOpenCalculator={() => {
+          setViewMode('website');
+          setTimeout(() => {
+            document.getElementById('calculator')?.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        }}
+        onOpenFleet={() => {
+          setViewMode('website');
+          setTimeout(() => {
+            document.getElementById('vehicles')?.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        }}
         onOpenLogin={() => {
           setCurrentScreen('login');
         }}
