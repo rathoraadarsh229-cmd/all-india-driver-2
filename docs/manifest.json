@@ -1,0 +1,21 @@
+{
+  "name": "ALL INDIA DRIVER APP",
+  "short_name": "All India Driver",
+  "description": "0% Commission Direct Driver, Fleet Owner & 24x7 Roadside Highway Mechanic Network",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#141417",
+  "theme_color": "#FFC400",
+  "icons": [
+    {
+      "src": "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=192&auto=format&fit=crop&q=80",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=512&auto=format&fit=crop&q=80",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

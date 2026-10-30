@@ -1,4 +1,5 @@
 {
+  "name": "all-india-driver-app",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [

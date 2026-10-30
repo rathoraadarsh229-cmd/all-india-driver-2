@@ -458,7 +458,7 @@ export const LegalTermsPrivacyModal: React.FC<LegalTermsPrivacyModalProps> = ({
                   5. Service providers
                 </h4>
                 <p className="text-gray-300 text-xs sm:text-sm">
-                  We use outside services to run the app, such as hosting, the database, SMS/OTP and maps (<strong>InsForge</strong>, <strong>Truecaller / SMS Gateway</strong>, <strong>OpenStreetMap</strong>). They process data only to provide those services.
+                  We use outside services to run the app, such as hosting, the database, SMS/OTP and maps (<strong>InsForge</strong>, <strong>Telecom SMS Gateway (Fast2SMS)</strong>, <strong>OpenStreetMap</strong>). They process data only to provide those services.
                 </p>
               </div>
 
@@ -589,7 +589,7 @@ export const LegalTermsPrivacyModal: React.FC<LegalTermsPrivacyModalProps> = ({
                   5. बाहरी सेवाएँ
                 </h4>
                 <p className="text-gray-300 text-xs sm:text-sm">
-                  ऐप चलाने के लिए हम बाहरी सेवाएँ उपयोग करते हैं, जैसे होस्टिंग, डेटाबेस, SMS/OTP और मैप (<strong>InsForge</strong>, <strong>Truecaller / SMS Gateway</strong>, <strong>OpenStreetMap</strong>)। वे डेटा सिर्फ़ ये सेवाएँ देने के लिए संसाधित करती हैं।
+                  ऐप चलाने के लिए हम बाहरी सेवाएँ उपयोग करते हैं, जैसे होस्टिंग, डेटाबेस, SMS/OTP और मैप (<strong>InsForge</strong>, <strong>Telecom SMS Gateway (Fast2SMS)</strong>, <strong>OpenStreetMap</strong>)। वे डेटा सिर्फ़ ये सेवाएँ देने के लिए संसाधित करती हैं।
                 </p>
               </div>
 

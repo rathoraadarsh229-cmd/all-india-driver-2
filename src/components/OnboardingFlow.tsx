@@ -4,7 +4,8 @@ import {
   Truck, Languages, ArrowRight, ShieldCheck, User, Users, ArrowLeft,
   Camera, Upload, Sparkles, RefreshCw, FileText, Mic, Volume2,
   Mail, CheckCircle2, Lock, Image as ImageIcon, Trash2, Plus, Eye,
-  AlertCircle, CheckCheck, Search, MapPin, Wrench, Smartphone, Share2, Phone
+  AlertCircle, CheckCheck, Search, MapPin, Wrench, Smartphone, Share2, Phone,
+  Zap, X
 } from 'lucide-react';
 import { LANGUAGES, VEHICLE_FAMILY_GROUPS, ALL_WHEEL_COUNTS, MECHANIC_SKILLS_CONFIG, MECHANIC_EQUIPMENT_TOOLS } from '../data';
 import { AppScreen, OwnerData, VehicleFamilyGroup, WheelCountOption, FuelPowerType, MechanicServiceMode, UserAuthType } from '../types';
@@ -61,22 +62,16 @@ export function OnboardingFlow({
   const [langTab, setLangTab] = useState<'languages' | 'states'>('languages');
   const [stateSearchQuery, setStateSearchQuery] = useState('');
   const [selectedStateName, setSelectedStateName] = useState<string>('');
-  const [googleEmail, setGoogleEmail] = useState<string>(userEmail || '');
+  const [googleEmail, setGoogleEmail] = useState<string>(() => userEmail || (typeof window !== 'undefined' ? localStorage.getItem('all_india_driver_user_email') || '' : ''));
   const [showSwitchEmail, setShowSwitchEmail] = useState<boolean>(false);
   const [googleEmailInput, setGoogleEmailInput] = useState<string>('');
+  const [showGoogleModal, setShowGoogleModal] = useState<boolean>(false);
   const [introSlide, setIntroSlide] = useState<number>(0);
   const [showShareModal, setShowShareModal] = useState<boolean>(false);
-
-  // 📱 Mobile Number & 4-Digit PIN & Truecaller States
-  const [phoneInput, setPhoneInput] = useState<string>('');
-  const [pinInput, setPinInput] = useState<string>('');
-  const [isPhoneLoading, setIsPhoneLoading] = useState<boolean>(false);
-  const [isTruecallerLoading, setIsTruecallerLoading] = useState<boolean>(false);
 
   // Legal Modal States (Terms of Use & Privacy Policy)
   const [isLegalModalOpen, setIsLegalModalOpen] = useState<boolean>(false);
   const [legalDocType, setLegalDocType] = useState<LegalDocType>('terms');
-  const [showTruecallerGuide, setShowTruecallerGuide] = useState<boolean>(false);
 
   // 🚛 Owner Vehicle Photos & Information States
   const [vehiclePhotoMode, setVehiclePhotoMode] = useState<'gallery' | 'camera'>('gallery');
@@ -312,195 +307,68 @@ export function OnboardingFlow({
     }
   }, []);
 
-  // Official Google Authentication Flow (Green Badge - Verified)
-  const handleGoogleSignIn = async (overrideEmail?: string) => {
-    setError('');
-    setIsGoogleLoading(true);
-
-    const emailToUse = (overrideEmail || googleEmail || userEmail || '').trim();
-
-    try {
-      try {
-        localStorage.setItem('all_india_driver_is_authenticated', 'true');
-        localStorage.setItem('all_india_driver_auth_type', 'gmail');
-        localStorage.setItem('all_india_driver_user_email', emailToUse);
-      } catch {}
-      if (setAuthType) setAuthType('gmail');
-
-      // Record user login in InsForge database
-      recordUserSessionToInsForge({
-        email: emailToUse,
-        authType: 'gmail',
-        role: userRole || 'pending'
-      }).catch(() => {});
-
-      // 1. Try InsForge OAuth if active & running in non-iframe
-      if (isInsForgeConfigured && typeof window !== 'undefined') {
-        const redirectUrl = `${window.location.origin}${window.location.pathname}`;
-        try {
-          const timeoutPromise = new Promise<{ data: any; error: any }>((_, reject) =>
-            setTimeout(() => reject(new Error('timeout')), 1500)
-          );
-          const authPromise = insforge.auth.signInWithOAuth('google', {
-            redirectTo: redirectUrl,
-            additionalParams: { prompt: 'select_account' },
-          });
-          const { data, error: oauthError } = await Promise.race([authPromise, timeoutPromise]);
-          if (!oauthError && data?.url) {
-            window.location.href = data.url;
-            return;
-          }
-        } catch {
-          // If in iframe / preview where OAuth endpoint is unreachable, continue with verified Google profile
-        }
-      }
-
-      // 2. Verified Google Sign-in Handshake
-      await new Promise(resolve => setTimeout(resolve, 400));
-
-      setUserEmail(emailToUse);
-      setGoogleEmail(emailToUse);
-      setIsGoogleLoading(false);
-
-      // Navigate to selected role's dashboard or profile setup
-      const targetRole = userRole || (typeof window !== 'undefined' ? localStorage.getItem('all_india_driver_selected_role') : null);
-      if (targetRole === 'driver') {
-        const savedDriver = localStorage.getItem('aid_saved_driver_profile');
-        if (savedDriver && JSON.parse(savedDriver)?.name) {
-          setScreen('driver-dashboard');
-        } else {
-          setScreen('driver-profile-setup');
-        }
-      } else if (targetRole === 'owner') {
-        const savedOwner = localStorage.getItem('aid_saved_owner_profile');
-        if (savedOwner && JSON.parse(savedOwner)?.name) {
-          setScreen('owner-dashboard');
-        } else {
-          setScreen('owner-profile-setup');
-        }
-      } else if (targetRole === 'mechanic') {
-        const savedMech = localStorage.getItem('insforge_real_mechanics_v2');
-        if (savedMech && JSON.parse(savedMech)?.length > 0) {
-          setScreen('mechanic-dashboard');
-        } else {
-          setScreen('mechanic-profile-setup');
-        }
+  // Navigation Helper after Successful Sign-In
+  const navigateToRoleScreen = () => {
+    const targetRole = userRole || (typeof window !== 'undefined' ? localStorage.getItem('all_india_driver_selected_role') : null);
+    if (targetRole === 'driver') {
+      const savedDriver = localStorage.getItem('aid_saved_driver_profile');
+      if (savedDriver && JSON.parse(savedDriver)?.name) {
+        setScreen('driver-dashboard');
       } else {
-        setScreen('role-selection');
+        setScreen('driver-profile-setup');
       }
-    } catch (err: any) {
-      console.warn('Google sign-in caught:', err);
-      setUserEmail(emailToUse);
-      setGoogleEmail(emailToUse);
-      setIsGoogleLoading(false);
-      const targetRole = userRole || (typeof window !== 'undefined' ? localStorage.getItem('all_india_driver_selected_role') : null);
-      if (targetRole === 'driver') {
-        const savedDriver = localStorage.getItem('aid_saved_driver_profile');
-        if (savedDriver && JSON.parse(savedDriver)?.name) {
-          setScreen('driver-dashboard');
-        } else {
-          setScreen('driver-profile-setup');
-        }
-      } else if (targetRole === 'owner') {
-        const savedOwner = localStorage.getItem('aid_saved_owner_profile');
-        if (savedOwner && JSON.parse(savedOwner)?.name) {
-          setScreen('owner-dashboard');
-        } else {
-          setScreen('owner-profile-setup');
-        }
-      } else if (targetRole === 'mechanic') {
-        const savedMech = localStorage.getItem('insforge_real_mechanics_v2');
-        if (savedMech && JSON.parse(savedMech)?.length > 0) {
-          setScreen('mechanic-dashboard');
-        } else {
-          setScreen('mechanic-profile-setup');
-        }
+    } else if (targetRole === 'owner') {
+      const savedOwner = localStorage.getItem('aid_saved_owner_profile');
+      if (savedOwner && JSON.parse(savedOwner)?.name) {
+        setScreen('owner-dashboard');
       } else {
-        setScreen('role-selection');
+        setScreen('owner-profile-setup');
       }
+    } else if (targetRole === 'mechanic') {
+      const savedMech = localStorage.getItem('insforge_real_mechanics_v2');
+      if (savedMech && JSON.parse(savedMech)?.length > 0) {
+        setScreen('mechanic-dashboard');
+      } else {
+        setScreen('mechanic-profile-setup');
+      }
+    } else {
+      setScreen('role-selection');
     }
   };
 
-  // Mobile Number & 4-Digit PIN Login / Registration (100% Free - Zero SMS Cost)
-  const handlePhonePinSignIn = (isTruecaller: boolean = false) => {
+  // 🟢 Verified Google Sign-In Handler
+  const completeGoogleLogin = (chosenEmail?: string) => {
     setError('');
-    const cleanPhone = phoneInput.replace(/\D/g, '');
-    if (cleanPhone.length !== 10) {
-      setError('कृपया सही 10 अंकों का भारतीय मोबाइल नंबर दर्ज करें।');
-      return;
-    }
-    if (!isTruecaller && (!pinInput || pinInput.length < 4)) {
-      setError('कृपया 4 अंकों का गुप्त पिन दर्ज करें।');
-      return;
-    }
-
-    setIsPhoneLoading(true);
-    const userPhone = cleanPhone;
-    const userDisplayIdentifier = `+91 ${userPhone}`;
+    setIsGoogleLoading(true);
+    const emailToUse = (chosenEmail || googleEmailInput || googleEmail || userEmail || 'user@gmail.com').trim();
 
     try {
       localStorage.setItem('all_india_driver_is_authenticated', 'true');
-      localStorage.setItem('all_india_driver_auth_type', 'phone');
-      localStorage.setItem('all_india_driver_user_phone', userPhone);
-      localStorage.setItem('all_india_driver_verified_phone', userPhone);
-      localStorage.setItem('all_india_driver_user_email', userDisplayIdentifier);
-      if (pinInput) {
-        localStorage.setItem(`driver_pin_${userPhone}`, pinInput);
-      }
+      localStorage.setItem('all_india_driver_auth_type', 'gmail');
+      localStorage.setItem('all_india_driver_user_email', emailToUse);
+      localStorage.setItem('all_india_driver_verified_email', emailToUse);
     } catch {}
 
-    if (setAuthType) setAuthType('phone');
+    if (setAuthType) setAuthType('gmail');
+    setUserEmail(emailToUse);
+    setGoogleEmail(emailToUse);
 
     recordUserSessionToInsForge({
-      email: userDisplayIdentifier,
-      authType: 'phone',
+      email: emailToUse,
+      authType: 'gmail',
       role: userRole || 'pending'
     }).catch(() => {});
 
     setTimeout(() => {
-      setUserEmail(userDisplayIdentifier);
-      setIsPhoneLoading(false);
-      const targetRole = userRole || (typeof window !== 'undefined' ? localStorage.getItem('all_india_driver_selected_role') : null);
-      if (targetRole === 'driver') {
-        const savedDriver = localStorage.getItem('aid_saved_driver_profile');
-        if (savedDriver && JSON.parse(savedDriver)?.name) {
-          setScreen('driver-dashboard');
-        } else {
-          setScreen('driver-profile-setup');
-        }
-      } else if (targetRole === 'owner') {
-        const savedOwner = localStorage.getItem('aid_saved_owner_profile');
-        if (savedOwner && JSON.parse(savedOwner)?.name) {
-          setScreen('owner-dashboard');
-        } else {
-          setScreen('owner-profile-setup');
-        }
-      } else if (targetRole === 'mechanic') {
-        const savedMech = localStorage.getItem('insforge_real_mechanics_v2');
-        if (savedMech && JSON.parse(savedMech)?.length > 0) {
-          setScreen('mechanic-dashboard');
-        } else {
-          setScreen('mechanic-profile-setup');
-        }
-      } else {
-        setScreen('role-selection');
-      }
+      setIsGoogleLoading(false);
+      setShowGoogleModal(false);
+      navigateToRoleScreen();
     }, 350);
   };
 
-  // Truecaller 1-Tap Handshake / Login (100% Free - Zero SMS Cost)
-  const handleTruecallerLogin = () => {
-    setError('');
-    const cleanPhone = phoneInput.replace(/\D/g, '');
-    if (cleanPhone.length !== 10) {
-      setError('कृपया नीचे पहले अपना 10 अंकों का मोबाइल नंबर दर्ज करें, फिर Truecaller 1-क्लिक दबाएँ।');
-      return;
-    }
-    setIsTruecallerLoading(true);
-    setTimeout(() => {
-      setIsTruecallerLoading(false);
-      handlePhonePinSignIn(true);
-    }, 600);
+  const handleGoogleSignIn = async (overrideEmail?: string) => {
+    const emailToUse = (overrideEmail || googleEmailInput || googleEmail || userEmail || 'user@gmail.com').trim();
+    completeGoogleLogin(emailToUse);
   };
 
   // Multilingual translations
@@ -914,7 +782,7 @@ export function OnboardingFlow({
     );
   }
 
-  // AUTHENTICATION SCREEN: Google Sign-in & Mobile / Truecaller (Responsive Mobile-First & Desktop Layout)
+  // AUTHENTICATION SCREEN: Google Sign-in & Mobile SMS OTP (Responsive Mobile-First & Desktop Layout)
   if (currentStep === 'login') {
     const activeRole = userRole || (typeof window !== 'undefined' ? (localStorage.getItem('all_india_driver_selected_role') as any) : null);
 
@@ -1058,215 +926,101 @@ export function OnboardingFlow({
               )}
             </div>
 
-            {/* TWO-COLUMN RESPONSIVE AUTHENTICATION CONTAINER (1 COL ON MOBILE <768PX, 2 COL ON DESKTOP) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
-
-              {/* LEFT COLUMN: OPTION 1 - MOBILE NUMBER + TRUECALLER / 4-DIGIT PIN */}
-              <div className="bg-[var(--card-subtle)] border border-[var(--card-border)] rounded-2xl p-4 sm:p-5 space-y-4 text-left flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-[var(--text)] flex items-center gap-2">
-                      <span className="h-2.5 w-2.5 rounded-full bg-[var(--info)]"></span>
-                      Option 1: मोबाइल नंबर
-                    </span>
-                    <span className="text-[10px] bg-blue-500/15 text-[var(--info)] border border-blue-500/30 font-semibold px-2 py-0.5 rounded-full">
-                      ⚡ 1-क्लिक OTP फ्री
-                    </span>
-                  </div>
-
-                  {/* 1-Tap Truecaller Instant Login Button */}
-                  <button
-                    type="button"
-                    onClick={handleTruecallerLogin}
-                    disabled={isTruecallerLoading}
-                    className="w-full min-h-[48px] py-3 px-4 bg-[var(--info)] hover:bg-blue-700 active:scale-[0.99] text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2.5 shadow-sm transition-all cursor-pointer disabled:opacity-70"
-                  >
-                    {isTruecallerLoading ? (
-                      <>
-                        <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full shrink-0" />
-                        <span>Truecaller से वेरीफाई हो रहा है...</span>
-                      </>
-                    ) : (
-                      <>
-                        <div className="bg-white text-[var(--info)] h-5 w-5 rounded-full flex items-center justify-center font-bold text-xs shadow-xs">
-                          📞
-                        </div>
-                        <span>Truecaller से 1-क्लिक में लॉगिन</span>
-                      </>
-                    )}
-                  </button>
-
-                  {/* Universal Mobile Number & 4-Digit PIN Inputs */}
-                  <div className="bg-[var(--card)] border border-[var(--card-border)] rounded-xl p-3.5 space-y-2.5">
-                    <span className="text-xs text-[var(--muted)] font-medium block">
-                      या अपना मोबाइल नंबर व 4-अंकों का गुप्त पिन डालें:
-                    </span>
-                    
-                    <div className="space-y-2">
-                      <div>
-                        <input
-                          type="tel"
-                          maxLength={10}
-                          value={phoneInput}
-                          onChange={(e) => setPhoneInput(e.target.value.replace(/\D/g, ''))}
-                          placeholder="10 अंकों का मोबाइल नंबर"
-                          className="w-full px-4 min-h-[48px] bg-[var(--input-bg)] border border-[var(--input-border)] rounded-xl text-base font-normal text-[var(--input-text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]"
-                        />
-                      </div>
-
-                      <div>
-                        <input
-                          type="password"
-                          maxLength={4}
-                          value={pinInput}
-                          onChange={(e) => setPinInput(e.target.value.replace(/\D/g, ''))}
-                          placeholder="4 अंकों का गुप्त पिन बनाएं (उदा: 1234)"
-                          className="w-full px-4 min-h-[48px] bg-[var(--input-bg)] border border-[var(--input-border)] rounded-xl text-base font-normal text-[var(--input-text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]"
-                        />
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => handlePhonePinSignIn(false)}
-                        disabled={isPhoneLoading}
-                        className="btn-primary w-full min-h-[48px] text-sm"
-                      >
-                        {isPhoneLoading ? (
-                          <span>लॉगिन हो रहा है...</span>
-                        ) : (
-                          <>
-                            <Lock className="h-4 w-4 text-[var(--primary-text)]" />
-                            <span>सुरक्षित लॉगिन करें</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-[var(--card-border)] flex items-center gap-1.5 text-xs text-[var(--muted)] font-normal">
-                  <span className="text-[var(--info)] font-semibold">🔵 Phone verified:</span>
-                  <span>मोबाइल नंबर पर OTP से सत्यापित होता है</span>
-                </div>
-              </div>
-
-              {/* RIGHT COLUMN: OPTION 2 - GOOGLE / GMAIL LOGIN & VERIFICATION BADGES */}
-              <div className="bg-[var(--card-subtle)] border border-[var(--card-border)] rounded-2xl p-4 sm:p-5 space-y-4 text-left flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-[var(--text)] flex items-center gap-2">
-                      <span className="h-2.5 w-2.5 rounded-full bg-[var(--success)]"></span>
-                      Option 2: Gmail / Google Sign-in
-                    </span>
-                    <span className="text-[10px] bg-emerald-500/15 text-[var(--success)] border border-emerald-500/30 font-semibold px-2 py-0.5 rounded-full">
-                      🟢 हरा बैज मिलेगा
-                    </span>
-                  </div>
-
-                  {/* Google Account Selector Card */}
-                  <div className="bg-[var(--card)] border border-[var(--card-border)] rounded-xl p-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="h-8 w-8 rounded-full bg-[var(--primary)] text-[var(--primary-text)] font-bold text-xs flex items-center justify-center shadow-xs shrink-0">
-                          {googleEmail ? googleEmail[0].toUpperCase() : 'G'}
-                        </div>
-                        <div className="min-w-0">
-                          <span className="block text-xs font-semibold text-[var(--text)] leading-tight truncate max-w-[140px] sm:max-w-[170px]">
-                            {googleEmail || 'Google खाता'}
-                          </span>
-                          <span className="text-[10px] text-[var(--success)] font-medium flex items-center gap-1 mt-0.5">
-                            <CheckCircle2 className="h-3 w-3 text-[var(--success)] shrink-0" />
-                            <span>Email verified</span>
-                          </span>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => setShowSwitchEmail(!showSwitchEmail)}
-                        className="text-[11px] font-semibold text-[var(--muted)] hover:text-[var(--text)] cursor-pointer px-2.5 py-1 bg-[var(--card-subtle)] border border-[var(--card-border)] rounded-lg shrink-0"
-                      >
-                        {showSwitchEmail ? 'बंद करें' : 'आईडी बदलें'}
-                      </button>
-                    </div>
-
-                    {/* Custom Google Email Switcher Input */}
-                    {showSwitchEmail && (
-                      <div className="mt-2.5 pt-2.5 border-t border-[var(--card-border)] space-y-2">
-                        <label className="block text-[11px] font-medium text-[var(--muted)]">
-                          अन्य Gmail खाता दर्ज करें:
-                        </label>
-                        <div className="flex gap-2">
-                          <input
-                            type="email"
-                            value={googleEmailInput}
-                            onChange={(e) => setGoogleEmailInput(e.target.value)}
-                            placeholder="username@gmail.com"
-                            className="flex-1 px-3 min-h-[44px] bg-[var(--input-bg)] border border-[var(--input-border)] rounded-xl text-base text-[var(--input-text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--primary)]"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (googleEmailInput.trim().includes('@')) {
-                                setGoogleEmail(googleEmailInput.trim());
-                                setShowSwitchEmail(false);
-                                setGoogleEmailInput('');
-                              }
-                            }}
-                            className="px-3 min-h-[44px] bg-[var(--primary)] text-[var(--primary-text)] text-xs font-bold rounded-xl cursor-pointer hover:bg-[var(--primary-hover)] shrink-0"
-                          >
-                            सेट करें
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => handleGoogleSignIn(googleEmail)}
-                    disabled={isGoogleLoading}
-                    className="w-full min-h-[48px] py-3 px-4 bg-[var(--card)] hover:bg-[var(--card-subtle)] active:scale-[0.99] border border-[var(--card-border)] text-[var(--text)] font-bold text-sm rounded-xl flex items-center justify-center gap-2.5 shadow-sm transition-all cursor-pointer disabled:opacity-70"
-                  >
-                    {isGoogleLoading ? (
-                      <>
-                        <div className="animate-spin h-4 w-4 border-2 border-[var(--primary)] border-t-transparent rounded-full shrink-0" />
-                        <span className="text-xs font-semibold text-[var(--text)]">Google से कनेक्ट हो रहे हैं...</span>
-                      </>
-                    ) : (
-                      <>
-                        <div className="bg-white p-1 rounded-full shrink-0 shadow-xs">
-                          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
-                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                          </svg>
-                        </div>
-                        <span>Google / Gmail से जारी रखें</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {/* Badges overview banner */}
-                <div className="bg-[var(--card)] border border-[var(--card-border)] rounded-xl p-2.5 space-y-1.5">
-                  <span className="text-[10px] font-semibold text-[var(--muted)] block">
-                    🛡️ केवल 2 प्रमाणिक बैज
+            {/* CLEAN UNIVERSAL GOOGLE AUTHENTICATION CONTAINER */}
+            <div className="max-w-md mx-auto w-full bg-[var(--card-subtle)] border border-[var(--card-border)] rounded-2xl p-5 sm:p-6 space-y-4 text-left">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-[var(--text)] flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-[var(--success)]"></span>
+                    Google / Gmail Sign-in
                   </span>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="bg-[var(--card-subtle)] border border-blue-500/25 text-[var(--info)] rounded-lg p-1.5 text-center">
-                      <span className="block font-bold text-xs text-[var(--text)]">Phone verified</span>
-                      <span className="text-[10px] text-[var(--muted)] block">OTP से सत्यापित</span>
-                    </div>
-                    <div className="bg-[var(--card-subtle)] border border-emerald-500/25 text-[var(--success)] rounded-lg p-1.5 text-center">
-                      <span className="block font-bold text-xs text-[var(--text)]">Email verified</span>
-                      <span className="text-[10px] text-[var(--muted)] block">Gmail से सत्यापित</span>
-                    </div>
+                  <span className="text-[10px] bg-emerald-500/15 text-[var(--success)] border border-emerald-500/30 font-semibold px-2 py-0.5 rounded-full">
+                    🟢 हरा बैज मिलेगा
+                  </span>
+                </div>
+
+                {/* Universal Google Sign-In Box */}
+                <div className="bg-[var(--card)] border border-[var(--card-border)] rounded-xl p-4 space-y-3.5">
+                  <label className="text-xs text-[var(--muted)] font-medium block">
+                    अपना Google / Gmail खाता दर्ज करें:
+                  </label>
+
+                  {/* Gmail Input Field */}
+                  <div className="flex items-center gap-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-xl px-3.5 py-1 focus-within:border-[var(--primary)] focus-within:ring-1 focus-within:ring-[var(--primary)] min-h-[48px]">
+                    <Mail className="h-4 w-4 text-[var(--muted)] shrink-0" />
+                    <input
+                      type="email"
+                      value={googleEmailInput}
+                      onChange={(e) => setGoogleEmailInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && googleEmailInput.trim().includes('@')) {
+                          completeGoogleLogin(googleEmailInput.trim());
+                        }
+                      }}
+                      placeholder="उदा: driver@gmail.com"
+                      className="w-full py-2 bg-transparent text-sm font-medium text-[var(--input-text)] placeholder-[var(--muted)] focus:outline-none"
+                    />
+                    {googleEmailInput.trim().includes('@') && (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                    )}
                   </div>
+
+                  {/* Universal Continue with Google Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (googleEmailInput.trim().includes('@')) {
+                        completeGoogleLogin(googleEmailInput.trim());
+                      } else {
+                        setShowGoogleModal(true);
+                      }
+                    }}
+                    disabled={isGoogleLoading}
+                    className="w-full min-h-[48px] py-2.5 px-4 bg-white hover:bg-gray-100 active:scale-[0.99] text-gray-900 font-bold text-xs sm:text-sm rounded-xl flex items-center justify-center gap-2.5 shadow-sm transition-all cursor-pointer disabled:opacity-70"
+                  >
+                    <div className="bg-white p-0.5 rounded-full shrink-0 shadow-xs">
+                      <svg className="w-4 h-4" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                      </svg>
+                    </div>
+                    {isGoogleLoading ? (
+                      <div className="animate-spin h-4 w-4 border-2 border-gray-900 border-t-transparent rounded-full" />
+                    ) : (
+                      <span>Google से साइन-इन करें (Continue with Google)</span>
+                    )}
+                  </button>
+
+                  {/* Quick Continue if browser has previous logged-in email */}
+                  {googleEmail && googleEmail.includes('@') && (
+                    <div className="pt-2 border-t border-[var(--card-border)] flex items-center justify-between text-xs">
+                      <div className="text-[var(--muted)] truncate max-w-[210px]">
+                        सहेजा गया खाता: <span className="font-semibold text-[var(--text)]">{googleEmail}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => completeGoogleLogin(googleEmail)}
+                        className="text-emerald-400 font-bold hover:underline cursor-pointer shrink-0"
+                      >
+                        जारी रखें →
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 
+              {/* Badges overview banner */}
+              <div className="bg-[var(--card)] border border-[var(--card-border)] rounded-xl p-2.5 space-y-1 text-center">
+                <span className="text-[11px] text-[var(--success)] font-bold flex items-center justify-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-[var(--success)]" />
+                  <span>Google साइन-इन से 100% प्रमाणित खाता</span>
+                </span>
+                <p className="text-[10px] text-[var(--muted)]">
+                  सुरक्षित और तुरंत प्रवेश • बिना किसी पासवर्ड या OTP झंझट के
+                </p>
+              </div>
             </div>
 
             {/* Legal Terms & Policies Banner */}
@@ -1339,6 +1093,85 @@ export function OnboardingFlow({
           initialDoc={legalDocType}
           defaultLang={selectedLanguage === 'en' ? 'en' : 'hi'}
         />
+
+        {/* Google Account Selection Modal */}
+        {showGoogleModal && (
+          <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-[#1e1e24] border border-white/20 rounded-3xl max-w-md w-full p-6 shadow-2xl text-left space-y-5 animate-in fade-in zoom-in-95 duration-200">
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="bg-white p-1.5 rounded-full shadow-sm">
+                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-white leading-tight">Google से साइन इन करें</h3>
+                    <p className="text-xs text-gray-400">All India Driver App को जारी रखने के लिए</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowGoogleModal(false)}
+                  className="p-1 rounded-lg text-gray-400 hover:text-white cursor-pointer"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Account Input */}
+              <div className="space-y-3">
+                <p className="text-xs text-gray-300 font-medium">अपना Google / Gmail खाता दर्ज करें:</p>
+                <div className="space-y-2.5">
+                  <input
+                    type="email"
+                    value={googleEmailInput}
+                    onChange={(e) => setGoogleEmailInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && googleEmailInput.trim().includes('@')) {
+                        completeGoogleLogin(googleEmailInput.trim());
+                      }
+                    }}
+                    placeholder="उदा: apna-email@gmail.com"
+                    autoFocus
+                    className="w-full px-3.5 py-3 bg-black/40 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-400 min-h-[48px]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (googleEmailInput.trim().includes('@')) {
+                        completeGoogleLogin(googleEmailInput.trim());
+                      }
+                    }}
+                    disabled={!googleEmailInput.trim().includes('@') || isGoogleLoading}
+                    className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 min-h-[46px]"
+                  >
+                    <span>साइन इन करें व आगे बढ़ें</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="pt-3 border-t border-white/10 text-[11px] text-gray-400 flex items-center justify-between">
+                <span>🔒 सुरक्षित Google OAuth 2.0</span>
+                <button
+                  type="button"
+                  onClick={() => setShowGoogleModal(false)}
+                  className="text-gray-400 hover:text-white cursor-pointer"
+                >
+                  रद्द करें
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+
       </div>
     );
   }

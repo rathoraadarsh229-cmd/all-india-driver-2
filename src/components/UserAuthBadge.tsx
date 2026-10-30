@@ -46,7 +46,7 @@ export const UserAuthBadge: React.FC<UserAuthBadgeProps> = ({
   }
 
   // Phone Verified users -> Green badge
-  if (type === 'phone' || type === 'truecaller') {
+  if (type === 'phone') {
     return (
       <span
         className={`inline-flex items-center gap-1 font-black rounded-md border bg-emerald-50 text-emerald-900 border-emerald-300 shadow-2xs select-none ${
