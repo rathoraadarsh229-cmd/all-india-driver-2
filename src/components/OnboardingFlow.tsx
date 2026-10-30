@@ -33,6 +33,27 @@ interface OnboardingFlowProps {
   setAuthType?: (type: UserAuthType) => void;
 }
 
+// ✇ Steering Wheel SVG Icon (Matching Mockup)
+const SteeringWheelIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <circle cx="12" cy="12" r="3" />
+    <line x1="12" y1="2" x2="12" y2="9" />
+    <line x1="4.93" y1="16.07" x2="9.88" y2="13.2" />
+    <line x1="19.07" y1="16.07" x2="14.12" y2="13.2" />
+  </svg>
+);
+
+// 🇬 Google Logo SVG Icon
+const GoogleLogoSvg = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24">
+    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+  </svg>
+);
+
 export function OnboardingFlow({
   currentStep,
   setScreen,
@@ -48,6 +69,9 @@ export function OnboardingFlow({
   setAuthType
 }: OnboardingFlowProps) {
   const [error, setError] = useState('');
+  const [selectedCardRole, setSelectedCardRole] = useState<'driver' | 'owner' | 'mechanic'>(() => {
+    return userRole || 'driver';
+  });
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isOwnerListening, setIsOwnerListening] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(true);
@@ -445,139 +469,116 @@ export function OnboardingFlow({
     );
   }
 
-  // INTRO SCREENS WITH SKIP, NEXT, AND BACK (CHANGE 1)
+  // SCREEN 1: WELCOME SCREEN (Matching Uploaded Mockup Format with Website Dark Theme)
   if (currentStep === 'intro') {
-    const INTRO_SLIDES = [
-      {
-        badge: 'ALL INDIA SARTHI NETWORK',
-        icon: <Truck className="h-16 w-16 text-brand-orange" />,
-        title: 'पूरे भारत के व्यावसायिक चालक व गाड़ियां',
-        subtitle: '2-पहिया, ऑटो, कार, भारी ट्रक से लेकर 40+ चक्का ट्रेलर तक के व्यावसायिक चालकों का सबसे भरोसेमंद नेटवर्क।',
-        points: ['✓ 28 राज्य व केंद्र शासित प्रदेश', '✓ 2W से 40+W सभी श्रेणियां', '✓ डिजिटल सारथी आईडी']
-      },
-      {
-        badge: 'DIRECT CONNECT • 0% COMMISSION',
-        icon: <Users className="h-16 w-16 text-emerald-400" />,
-        title: 'सीधा संपर्क, शून्य दलाली',
-        subtitle: 'गाड़ी मालिक और ड्राइवर बिना किसी बिचौलिये या एजेंट के सीधे फोन कॉल व चैट पर बात करके तुरंत डील तय करें।',
-        points: ['✓ 100% मुफ़्त सीधी बातचीत', '✓ कोई बिचौलिया या दलाली नहीं', '✓ सुरक्षित प्राइवेसी सुरक्षा']
-      },
-      {
-        badge: '24x7 HIGHWAY BREAKDOWN ASSIST',
-        icon: <Wrench className="h-16 w-16 text-blue-400" />,
-        title: 'हाईवे पर 24x7 ऑन-साइट मैकेनिक',
-        subtitle: 'इमरजेंसी ब्रेकडाउन होने पर 5 से 50 KM के दायरे में तुरंत नजदीकी गैरेज, मैकेनिक, क्रेन व टोइंग सहायता पाएँ।',
-        points: ['✓ 20 आवश्यक रिपेयर स्किल्स', '✓ ऑन-साइट रोडसाइड SOS', '✓ 24x7 आपातकालीन सहायता']
-      }
-    ];
-
-    const currentSlideData = INTRO_SLIDES[introSlide];
-
     return (
-      <div className="flex-1 bg-navy text-white flex flex-col justify-between p-6 h-full select-none">
+      <div className="min-h-screen bg-[#0B0B0C] text-white flex flex-col justify-between p-6 sm:p-8 select-none max-w-md mx-auto w-full font-sans transition-colors duration-200">
         
-        {/* Top Header with Skip Button */}
-        <div className="flex items-center justify-between shrink-0">
-          <span className="text-[9.5px] bg-brand-orange/15 text-brand-orange border border-brand-orange/30 font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
-            {currentSlideData.badge}
-          </span>
-          <button
-            type="button"
-            onClick={() => setScreen('language')}
-            className="text-xs font-bold text-slate-300 hover:text-white px-2.5 py-1 rounded-lg hover:bg-white/10 transition-all cursor-pointer"
-          >
-            छोड़ें (Skip) ➔
-          </button>
+        {/* Top Header with Language Switcher Pill [हिंदी | English] */}
+        <div className="flex items-center justify-end w-full pt-2">
+          <div className="inline-flex items-center bg-[#1C1C24] border border-white/10 rounded-full p-1 shadow-inner">
+            <button
+              type="button"
+              onClick={() => setSelectedLanguage('hi')}
+              className={`px-3.5 py-1 text-xs font-bold rounded-full transition-all cursor-pointer ${
+                selectedLanguage === 'hi'
+                  ? 'bg-white text-gray-950 shadow-xs'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              हिंदी
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedLanguage('en')}
+              className={`px-3.5 py-1 text-xs font-bold rounded-full transition-all cursor-pointer ${
+                selectedLanguage === 'en'
+                  ? 'bg-white text-gray-950 shadow-xs'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              English
+            </button>
+          </div>
         </div>
 
-        {/* Center Animated Slide Content */}
-        <motion.div
-          key={introSlide}
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -15 }}
-          transition={{ duration: 0.45, ease: 'easeInOut' }}
-          className="flex flex-col items-center text-center space-y-4 my-auto px-2"
-        >
-          <div className="h-28 w-28 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center shadow-xl">
-            {currentSlideData.icon}
+        {/* Center/Left Content: Orange Truck Badge, Brand, Title & Subtitle */}
+        <div className="my-auto py-8 space-y-4 text-left">
+          {/* Orange Truck Badge */}
+          <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl sm:rounded-3xl bg-[#FFC400] flex items-center justify-center shadow-lg shadow-amber-500/20">
+            <Truck className="h-8 w-8 sm:h-10 sm:w-10 text-gray-950" strokeWidth={2.2} />
           </div>
 
-          <div className="space-y-2">
-            <h2 className="text-xl font-black text-white font-display leading-tight">
-              {currentSlideData.title}
-            </h2>
-            <p className="text-xs text-slate-300 font-semibold leading-relaxed max-w-xs mx-auto">
-              {currentSlideData.subtitle}
-            </p>
-          </div>
+          {/* Sub-brand Caption */}
+          <span className="text-sm sm:text-base font-extrabold text-[#FFC400] tracking-wide block pt-1">
+            All India Driver
+          </span>
 
-          <div className="flex flex-wrap justify-center gap-1.5 pt-2">
-            {currentSlideData.points.map((pt, idx) => (
-              <span key={idx} className="text-[10px] bg-white/10 text-slate-200 font-bold px-2.5 py-1 rounded-lg border border-white/10">
-                {pt}
-              </span>
-            ))}
-          </div>
-        </motion.div>
+          {/* Large Bold Headline */}
+          <h1 className="text-3xl sm:text-4xl font-black text-white leading-tight font-display tracking-tight">
+            {selectedLanguage === 'hi' ? 'Driver aur Owner, seedha connection.' : 'Driver and Owner, direct connection.'}
+          </h1>
 
-        {/* Bottom Navigation with Dots & Next / Back */}
-        <div className="space-y-4 shrink-0">
-          
-          {/* Indicator Dots */}
-          <div className="flex justify-center gap-2">
-            {INTRO_SLIDES.map((_, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => setIntroSlide(idx)}
-                className={`h-2 rounded-full transition-all cursor-pointer ${
-                  introSlide === idx ? 'w-6 bg-brand-orange' : 'w-2 bg-slate-600'
-                }`}
-              />
-            ))}
-          </div>
+          {/* Subtitle (Labour Option Completely Removed) */}
+          <p className="text-sm sm:text-base text-gray-400 font-normal leading-relaxed max-w-sm pt-1">
+            {selectedLanguage === 'hi'
+              ? 'Bina dalal ke. Driver, Owner aur Mechanic, sab ek hi app par.'
+              : 'Zero commission. Driver, Owner and Mechanic, all in one app.'}
+          </p>
+        </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-3">
-            {introSlide > 0 ? (
-              <button
-                type="button"
-                onClick={() => setIntroSlide(prev => prev - 1)}
-                className="py-3 px-4 bg-white/10 hover:bg-white/15 text-white font-black text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-white/10"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span>पीछे (Back)</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setScreen('splash')}
-                className="py-3 px-4 bg-white/10 hover:bg-white/15 text-white font-black text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-white/10"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span>होम</span>
-              </button>
-            )}
+        {/* Bottom Actions: Solid Login Button, Outlined Sign Up Button & Legal Agreement */}
+        <div className="space-y-3.5 w-full pb-4">
+          <button
+            type="button"
+            onClick={() => setScreen('login')}
+            className="w-full py-4 px-6 bg-[#FFC400] hover:bg-amber-400 active:scale-[0.99] text-gray-950 font-black text-base rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20 transition-all cursor-pointer min-h-[52px]"
+          >
+            Login
+          </button>
 
+          <button
+            type="button"
+            onClick={() => setScreen('role-selection')}
+            className="w-full py-4 px-6 bg-transparent hover:bg-white/5 active:scale-[0.99] text-white border-2 border-white/20 hover:border-white/40 font-black text-base rounded-2xl flex items-center justify-center transition-all cursor-pointer min-h-[52px]"
+          >
+            Sign up
+          </button>
+
+          <div className="text-[11px] sm:text-xs text-gray-400 text-center leading-normal pt-2">
+            <span>{selectedLanguage === 'hi' ? 'Aage badhne par aap ' : 'By continuing, you agree to our '}</span>
             <button
               type="button"
               onClick={() => {
-                if (introSlide < INTRO_SLIDES.length - 1) {
-                  setIntroSlide(prev => prev + 1);
-                } else {
-                  setScreen('language');
-                }
+                setLegalDocType('terms');
+                setIsLegalModalOpen(true);
               }}
-              className="flex-1 py-3 px-5 bg-brand-orange hover:bg-amber-500 text-navy font-black text-xs rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-brand-orange/20 cursor-pointer active:scale-95 transition-all"
+              className="text-gray-300 hover:text-white underline cursor-pointer font-medium"
             >
-              <span>{introSlide < INTRO_SLIDES.length - 1 ? 'आगे बढ़ें (Next)' : 'ऐप शुरू करें (Continue)'}</span>
-              <ArrowRight className="h-4 w-4" />
+              Terms
             </button>
+            <span>{selectedLanguage === 'hi' ? ' aur ' : ' and '}</span>
+            <button
+              type="button"
+              onClick={() => {
+                setLegalDocType('privacy');
+                setIsLegalModalOpen(true);
+              }}
+              className="text-gray-300 hover:text-white underline cursor-pointer font-medium"
+            >
+              Privacy Policy
+            </button>
+            <span>{selectedLanguage === 'hi' ? ' se sehmat hain.' : '.'}</span>
           </div>
-
         </div>
 
+        {/* Legal Modal */}
+        <LegalTermsPrivacyModal
+          isOpen={isLegalModalOpen}
+          onClose={() => setIsLegalModalOpen(false)}
+          initialDoc={legalDocType}
+          selectedLanguage={selectedLanguage}
+        />
       </div>
     );
   }
@@ -782,419 +783,144 @@ export function OnboardingFlow({
     );
   }
 
-  // AUTHENTICATION SCREEN: Google Sign-in & Mobile SMS OTP (Responsive Mobile-First & Desktop Layout)
+  // SCREEN 2: LOGIN SCREEN (Matching Uploaded Mockup Format with Website Dark Theme)
   if (currentStep === 'login') {
-    const activeRole = userRole || (typeof window !== 'undefined' ? (localStorage.getItem('all_india_driver_selected_role') as any) : null);
-
     return (
-      <div className="min-h-[85vh] bg-[var(--bg)] text-[var(--text)] flex flex-col justify-center items-center py-6 sm:py-10 w-full font-sans transition-colors duration-200">
-        <div className="form-container">
-          <div className="w-full bg-[var(--card)] border border-[var(--card-border)] rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-lg space-y-6">
-            
-            {/* Top Header with Back button and Status */}
-            <div className="flex items-center justify-between border-b border-[var(--card-border)] pb-4">
-              <button
-                type="button"
-                onClick={() => setScreen('role-selection')}
-                className="p-2 sm:px-3 sm:py-2 rounded-xl bg-[var(--card-subtle)] hover:bg-[var(--card-border)] text-[var(--text)] transition-all cursor-pointer border border-[var(--card-border)] flex items-center gap-2 text-xs font-semibold min-h-[40px]"
-                title="भूमिका चयन पर वापस जाएं"
-              >
-                <ArrowLeft className="h-4 w-4 text-[var(--primary)]" />
-                <span>← भूमिका बदलें (Change Role)</span>
-              </button>
-              <span className="text-[11px] font-semibold text-[var(--muted)] bg-[var(--badge-bg)] border border-[var(--card-border)] px-3 py-1 rounded-full">
-                चरण 2: लॉगिन / प्रवेश
-              </span>
+      <div className="min-h-screen bg-[#0B0B0C] text-white flex flex-col justify-between p-6 sm:p-8 select-none max-w-md mx-auto w-full font-sans transition-colors duration-200">
+        
+        {/* Top Header with Back Chevron Button */}
+        <div className="flex items-center justify-start w-full pt-2">
+          <button
+            type="button"
+            onClick={() => setScreen('intro')}
+            className="h-11 w-11 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white cursor-pointer transition-all active:scale-95 shadow-sm"
+            title="पीछे जाएं (Go Back)"
+          >
+            <ArrowLeft className="h-5 w-5 text-white" />
+          </button>
+        </div>
+
+        {/* Center/Left Content: Orange Truck Badge, Title & Subtitle */}
+        <div className="my-auto py-8 space-y-4 text-left">
+          {/* Orange Truck Badge */}
+          <div className="h-14 w-14 rounded-2xl bg-[#FFC400] flex items-center justify-center shadow-md mb-6">
+            <Truck className="h-7 w-7 text-gray-950" strokeWidth={2.2} />
+          </div>
+
+          {/* Large Bold Headline */}
+          <h1 className="text-2xl sm:text-3xl font-black text-white leading-tight font-display tracking-tight">
+            {selectedLanguage === 'hi' ? 'Wapas aaye, swagat hai' : 'Welcome back'}
+          </h1>
+
+          {/* Subtitle */}
+          <p className="text-sm sm:text-base text-gray-400 font-normal leading-relaxed mt-2 max-w-sm">
+            {selectedLanguage === 'hi'
+              ? 'Apne Google account se login karein aur apna dashboard kholein.'
+              : 'Log in with your Google account to access your dashboard.'}
+          </p>
+
+          {error && (
+            <div className="bg-red-500/10 text-red-400 text-xs font-medium p-3 rounded-xl border border-red-500/20 text-left flex items-start gap-2">
+              <span className="shrink-0 text-sm">⚠️</span>
+              <span className="leading-snug">{error}</span>
+            </div>
+          )}
+
+          {/* Action Area: Gmail Input + Continue with Google Button */}
+          <div className="space-y-4 pt-6 w-full">
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">
+                {selectedLanguage === 'hi' ? 'Google / Gmail खाता दर्ज करें' : 'Enter Google / Gmail Account'}
+              </label>
+              <div className="flex items-center gap-2 bg-[#16161A] border border-white/15 focus-within:border-[#FFC400] rounded-xl px-3.5 py-1 min-h-[48px] transition-all">
+                <Mail className="h-4 w-4 text-gray-400 shrink-0" />
+                <input
+                  type="email"
+                  value={googleEmailInput}
+                  onChange={(e) => setGoogleEmailInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const target = googleEmailInput.trim() || 'user@gmail.com';
+                      completeGoogleLogin(target);
+                    }
+                  }}
+                  placeholder="उदा: driver@gmail.com"
+                  className="w-full py-2 bg-transparent text-sm font-medium text-white placeholder-gray-500 focus:outline-none"
+                />
+                {googleEmailInput.trim().includes('@') && (
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                )}
+              </div>
             </div>
 
-            {/* Selected Role Indicator Banner with 3 Roll Theme styling */}
-            {activeRole === 'driver' && (
-              <div className="bg-[#0C1A30] border border-cyan-500/50 rounded-2xl p-3.5 sm:p-4 flex items-center justify-between gap-3 shadow-[0_0_20px_rgba(0,180,216,0.25)]">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="h-10 w-10 rounded-xl bg-cyan-500/20 border border-cyan-400 text-cyan-300 flex items-center justify-center font-bold text-lg shrink-0 shadow-xs">
-                    ✇
-                  </div>
-                  <div className="text-left min-w-0">
-                    <span className="text-[10px] sm:text-[11px] font-extrabold text-cyan-400 tracking-wider uppercase block">
-                      चुनी गई भूमिका (Role Selected)
-                    </span>
-                    <span className="text-sm sm:text-base font-extrabold text-white truncate block">
-                      1. Driver (चालक) – Blue Theme
-                    </span>
-                  </div>
+            {/* Main Google Login Button (Matching Mockup) */}
+            <button
+              type="button"
+              onClick={() => {
+                const target = googleEmailInput.trim() || (googleEmail && googleEmail.includes('@') ? googleEmail : 'user@gmail.com');
+                completeGoogleLogin(target);
+              }}
+              disabled={isGoogleLoading}
+              className="w-full py-4 px-6 bg-white hover:bg-gray-100 active:scale-[0.99] text-gray-900 font-bold text-sm sm:text-base rounded-2xl flex items-center justify-center gap-3 transition-all cursor-pointer shadow-lg min-h-[52px] disabled:opacity-70"
+            >
+              <GoogleLogoSvg className="h-5 w-5 shrink-0" />
+              {isGoogleLoading ? (
+                <div className="flex items-center gap-2 text-gray-900 font-bold text-sm">
+                  <div className="animate-spin h-4 w-4 border-2 border-gray-900 border-t-transparent rounded-full" />
+                  <span>लॉगिन हो रहा है...</span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setScreen('role-selection')}
-                  className="px-3 py-1.5 rounded-xl bg-cyan-500/20 border border-cyan-400/60 text-cyan-300 hover:text-white text-xs font-bold transition-all cursor-pointer shrink-0"
-                >
-                  बदलें
-                </button>
-              </div>
-            )}
-
-            {activeRole === 'owner' && (
-              <div className="bg-[#0A2419] border border-emerald-500/50 rounded-2xl p-3.5 sm:p-4 flex items-center justify-between gap-3 shadow-[0_0_20px_rgba(16,185,129,0.25)]">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="h-10 w-10 rounded-xl bg-emerald-500/20 border border-emerald-400 text-emerald-300 flex items-center justify-center font-bold text-lg shrink-0 shadow-xs">
-                    🚗
-                  </div>
-                  <div className="text-left min-w-0">
-                    <span className="text-[10px] sm:text-[11px] font-extrabold text-emerald-400 tracking-wider uppercase block">
-                      चुनी गई भूमिका (Role Selected)
-                    </span>
-                    <span className="text-sm sm:text-base font-extrabold text-white truncate block">
-                      2. Vehicle Owner (गाड़ी मालिक) – Green Theme
-                    </span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setScreen('role-selection')}
-                  className="px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-400/60 text-emerald-300 hover:text-white text-xs font-bold transition-all cursor-pointer shrink-0"
-                >
-                  बदलें
-                </button>
-              </div>
-            )}
-
-            {activeRole === 'mechanic' && (
-              <div className="bg-[#1F112E] border border-purple-500/50 rounded-2xl p-3.5 sm:p-4 flex items-center justify-between gap-3 shadow-[0_0_20px_rgba(168,85,247,0.25)]">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="h-10 w-10 rounded-xl bg-purple-500/20 border border-purple-400 text-purple-300 flex items-center justify-center font-bold text-lg shrink-0 shadow-xs">
-                    🔧
-                  </div>
-                  <div className="text-left min-w-0">
-                    <span className="text-[10px] sm:text-[11px] font-extrabold text-purple-400 tracking-wider uppercase block">
-                      चुनी गई भूमिका (Role Selected)
-                    </span>
-                    <span className="text-sm sm:text-base font-extrabold text-white truncate block">
-                      3. Mechanic (मैकेनिक) – Purple Theme
-                    </span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setScreen('role-selection')}
-                  className="px-3 py-1.5 rounded-xl bg-purple-500/20 border border-purple-400/60 text-purple-300 hover:text-white text-xs font-bold transition-all cursor-pointer shrink-0"
-                >
-                  बदलें
-                </button>
-              </div>
-            )}
-
-            {!activeRole && (
-              <div className="bg-[var(--card-subtle)] border border-[var(--card-border)] rounded-2xl p-3.5 flex items-center justify-between gap-3">
-                <div className="text-left">
-                  <span className="text-xs font-bold text-[var(--text)] block">
-                    भूमिका चुनकर लॉगिन करें
-                  </span>
-                  <span className="text-[11px] text-[var(--muted)]">
-                    Driver, Owner या Mechanic में से एक चुनें
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setScreen('role-selection')}
-                  className="px-3 py-1.5 rounded-xl bg-[var(--primary)] text-[var(--primary-text)] text-xs font-bold cursor-pointer shrink-0"
-                >
-                  भूमिका चुनें
-                </button>
-              </div>
-            )}
-
-            <div className="text-center space-y-3">
-              {/* Header Title & Branding */}
-              <div className="flex flex-col items-center">
-                <div className="h-12 w-12 bg-[var(--primary)] text-[var(--primary-text)] rounded-xl flex items-center justify-center shadow-md mb-2">
-                  <Truck className="h-6 w-6" />
-                </div>
-
-                <h2 className="text-xl sm:text-2xl font-bold text-[var(--text)] font-display tracking-tight">
-                  {t.loginTitle}
-                </h2>
-                <p className="text-xs sm:text-sm text-[var(--muted)] font-normal max-w-md mt-1">
-                  {t.loginSubtitle}
-                </p>
-              </div>
-
-              {error && (
-                <div className="bg-red-500/10 text-[var(--danger)] text-xs font-medium p-3 rounded-xl border border-[var(--danger)]/30 text-left flex items-start gap-2.5 max-w-xl mx-auto">
-                  <span className="shrink-0 text-base">⚠️</span>
-                  <span className="leading-snug">{error}</span>
-                </div>
+              ) : (
+                <span>Continue with Google</span>
               )}
-            </div>
+            </button>
 
-            {/* CLEAN UNIVERSAL GOOGLE AUTHENTICATION CONTAINER */}
-            <div className="max-w-md mx-auto w-full bg-[var(--card-subtle)] border border-[var(--card-border)] rounded-2xl p-5 sm:p-6 space-y-4 text-left">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-[var(--text)] flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[var(--success)]"></span>
-                    Google / Gmail Sign-in
-                  </span>
-                  <span className="text-[10px] bg-emerald-500/15 text-[var(--success)] border border-emerald-500/30 font-semibold px-2 py-0.5 rounded-full">
-                    🟢 हरा बैज मिलेगा
-                  </span>
-                </div>
-
-                {/* Universal Google Sign-In Box */}
-                <div className="bg-[var(--card)] border border-[var(--card-border)] rounded-xl p-4 space-y-3.5">
-                  <label className="text-xs text-[var(--muted)] font-medium block">
-                    अपना Google / Gmail खाता दर्ज करें:
-                  </label>
-
-                  {/* Gmail Input Field */}
-                  <div className="flex items-center gap-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-xl px-3.5 py-1 focus-within:border-[var(--primary)] focus-within:ring-1 focus-within:ring-[var(--primary)] min-h-[48px]">
-                    <Mail className="h-4 w-4 text-[var(--muted)] shrink-0" />
-                    <input
-                      type="email"
-                      value={googleEmailInput}
-                      onChange={(e) => setGoogleEmailInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && googleEmailInput.trim().includes('@')) {
-                          completeGoogleLogin(googleEmailInput.trim());
-                        }
-                      }}
-                      placeholder="उदा: driver@gmail.com"
-                      className="w-full py-2 bg-transparent text-sm font-medium text-[var(--input-text)] placeholder-[var(--muted)] focus:outline-none"
-                    />
-                    {googleEmailInput.trim().includes('@') && (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                    )}
-                  </div>
-
-                  {/* Universal Continue with Google Button */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (googleEmailInput.trim().includes('@')) {
-                        completeGoogleLogin(googleEmailInput.trim());
-                      } else {
-                        setShowGoogleModal(true);
-                      }
-                    }}
-                    disabled={isGoogleLoading}
-                    className="w-full min-h-[48px] py-2.5 px-4 bg-white hover:bg-gray-100 active:scale-[0.99] text-gray-900 font-bold text-xs sm:text-sm rounded-xl flex items-center justify-center gap-2.5 shadow-sm transition-all cursor-pointer disabled:opacity-70"
-                  >
-                    <div className="bg-white p-0.5 rounded-full shrink-0 shadow-xs">
-                      <svg className="w-4 h-4" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                      </svg>
-                    </div>
-                    {isGoogleLoading ? (
-                      <div className="animate-spin h-4 w-4 border-2 border-gray-900 border-t-transparent rounded-full" />
-                    ) : (
-                      <span>Google से साइन-इन करें (Continue with Google)</span>
-                    )}
-                  </button>
-
-                  {/* Quick Continue if browser has previous logged-in email */}
-                  {googleEmail && googleEmail.includes('@') && (
-                    <div className="pt-2 border-t border-[var(--card-border)] flex items-center justify-between text-xs">
-                      <div className="text-[var(--muted)] truncate max-w-[210px]">
-                        सहेजा गया खाता: <span className="font-semibold text-[var(--text)]">{googleEmail}</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => completeGoogleLogin(googleEmail)}
-                        className="text-emerald-400 font-bold hover:underline cursor-pointer shrink-0"
-                      >
-                        जारी रखें →
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Badges overview banner */}
-              <div className="bg-[var(--card)] border border-[var(--card-border)] rounded-xl p-2.5 space-y-1 text-center">
-                <span className="text-[11px] text-[var(--success)] font-bold flex items-center justify-center gap-1.5">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-[var(--success)]" />
-                  <span>Google साइन-इन से 100% प्रमाणित खाता</span>
-                </span>
-                <p className="text-[10px] text-[var(--muted)]">
-                  सुरक्षित और तुरंत प्रवेश • बिना किसी पासवर्ड या OTP झंझट के
-                </p>
-              </div>
-            </div>
-
-            {/* Legal Terms & Policies Banner */}
-            <div className="pt-2 border-t border-[var(--card-border)] text-center space-y-2">
-              <div className="flex items-center justify-center gap-1.5 text-xs text-[var(--muted)] font-normal">
-                <Lock className="h-3.5 w-3.5 text-[var(--success)] shrink-0" />
-                <span>100% सुरक्षित • कोई दस्तावेज़ (DL/RC/Aadhaar) स्टोर नहीं होता</span>
-              </div>
-
-              <div className="text-xs text-[var(--muted)] text-center leading-relaxed">
-                लॉगिन या साइन-अप करके आप हमारी{' '}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLegalDocType('terms');
-                    setIsLegalModalOpen(true);
-                  }}
-                  className="text-[var(--info)] hover:underline font-semibold cursor-pointer"
-                >
-                  उपयोग की शर्तें
-                </button>{' '}
-                व{' '}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLegalDocType('privacy');
-                    setIsLegalModalOpen(true);
-                  }}
-                  className="text-[var(--info)] hover:underline font-semibold cursor-pointer"
-                >
-                  गोपनीयता नीति
-                </button>{' '}
-                स्वीकार करते हैं।
-              </div>
-
-              <div className="flex items-center justify-center gap-3 text-xs text-[var(--muted)] pt-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLegalDocType('terms');
-                    setIsLegalModalOpen(true);
-                  }}
-                  className="hover:text-[var(--text)] hover:underline cursor-pointer"
-                >
-                  Terms of Use
-                </button>
-                <span>•</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLegalDocType('privacy');
-                    setIsLegalModalOpen(true);
-                  }}
-                  className="hover:text-[var(--text)] hover:underline cursor-pointer"
-                >
-                  Privacy Policy
-                </button>
-              </div>
-              <p className="text-[11px] text-[var(--muted)] font-normal">
-                ALL INDIA DRIVER • 0% Brokerage Direct Network
-              </p>
-            </div>
+            {/* Subtext below Google button */}
+            <p className="text-xs text-gray-400 text-center leading-relaxed pt-1">
+              {selectedLanguage === 'hi'
+                ? 'Sirf Gmail se login hota hai. Koi password yaad rakhne ki zaroorat nahi.'
+                : 'Sign in only with Gmail. No passwords required.'}
+            </p>
           </div>
         </div>
 
-        {/* Legal Terms of Use & Privacy Policy Modal */}
+        {/* Bottom Footer: "Naya account? Sign up" */}
+        <div className="text-xs sm:text-sm text-gray-400 text-center pb-4 pt-4">
+          <span>{selectedLanguage === 'hi' ? 'Naya account? ' : 'New account? '}</span>
+          <button
+            type="button"
+            onClick={() => setScreen('role-selection')}
+            className="font-bold text-white hover:text-[#FFC400] underline ml-1 cursor-pointer transition-colors"
+          >
+            Sign up
+          </button>
+        </div>
+
+        {/* Legal Modal */}
         <LegalTermsPrivacyModal
           isOpen={isLegalModalOpen}
           onClose={() => setIsLegalModalOpen(false)}
           initialDoc={legalDocType}
-          defaultLang={selectedLanguage === 'en' ? 'en' : 'hi'}
+          selectedLanguage={selectedLanguage}
         />
-
-        {/* Google Account Selection Modal */}
-        {showGoogleModal && (
-          <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-[#1e1e24] border border-white/20 rounded-3xl max-w-md w-full p-6 shadow-2xl text-left space-y-5 animate-in fade-in zoom-in-95 duration-200">
-              {/* Header */}
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="bg-white p-1.5 rounded-full shadow-sm">
-                    <svg className="w-5 h-5" viewBox="0 0 24 24">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold text-white leading-tight">Google से साइन इन करें</h3>
-                    <p className="text-xs text-gray-400">All India Driver App को जारी रखने के लिए</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowGoogleModal(false)}
-                  className="p-1 rounded-lg text-gray-400 hover:text-white cursor-pointer"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              {/* Account Input */}
-              <div className="space-y-3">
-                <p className="text-xs text-gray-300 font-medium">अपना Google / Gmail खाता दर्ज करें:</p>
-                <div className="space-y-2.5">
-                  <input
-                    type="email"
-                    value={googleEmailInput}
-                    onChange={(e) => setGoogleEmailInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && googleEmailInput.trim().includes('@')) {
-                        completeGoogleLogin(googleEmailInput.trim());
-                      }
-                    }}
-                    placeholder="उदा: apna-email@gmail.com"
-                    autoFocus
-                    className="w-full px-3.5 py-3 bg-black/40 border border-white/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-400 min-h-[48px]"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (googleEmailInput.trim().includes('@')) {
-                        completeGoogleLogin(googleEmailInput.trim());
-                      }
-                    }}
-                    disabled={!googleEmailInput.trim().includes('@') || isGoogleLoading}
-                    className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 min-h-[46px]"
-                  >
-                    <span>साइन इन करें व आगे बढ़ें</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="pt-3 border-t border-white/10 text-[11px] text-gray-400 flex items-center justify-between">
-                <span>🔒 सुरक्षित Google OAuth 2.0</span>
-                <button
-                  type="button"
-                  onClick={() => setShowGoogleModal(false)}
-                  className="text-gray-400 hover:text-white cursor-pointer"
-                >
-                  रद्द करें
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-
       </div>
     );
   }
 
+  // SCREEN 3: ROLE SELECTION (STEP 1/2) (Labour Option Removed • Website Dark Theme)
   if (currentStep === 'role-selection') {
     const verifiedPhone = typeof window !== 'undefined' 
       ? localStorage.getItem('all_india_driver_verified_phone') || localStorage.getItem('all_india_driver_user_phone') || ownerData.phone 
       : ownerData.phone;
     
-    // Purge fake @driverapp.in email if any exists in memory or state
     const cleanUserEmail = userEmail && !userEmail.includes('@driverapp.in') ? userEmail : '';
-    const displayAccount = verifiedPhone 
-      ? (verifiedPhone.startsWith('+91') ? verifiedPhone : `+91 ${verifiedPhone}`)
-      : cleanUserEmail || '';
-
     const isAuthenticated = typeof window !== 'undefined' && 
       localStorage.getItem('all_india_driver_is_authenticated') === 'true' &&
       (Boolean(verifiedPhone) || (Boolean(cleanUserEmail) && !cleanUserEmail.includes('guest')));
 
-    const handleSelectDriver = () => {
-      setUserRole('driver');
+    const handleProceed = () => {
+      setUserRole(selectedCardRole);
       try {
-        localStorage.setItem('all_india_driver_selected_role', 'driver');
+        localStorage.setItem('all_india_driver_selected_role', selectedCardRole);
       } catch {}
 
       if (!isAuthenticated) {
@@ -1202,547 +928,185 @@ export function OnboardingFlow({
         return;
       }
 
-      const savedDriver = localStorage.getItem('aid_saved_driver_profile');
-      if (savedDriver && JSON.parse(savedDriver)?.name) {
-        setScreen('driver-dashboard');
-      } else {
-        setScreen('driver-profile-setup');
-      }
-    };
-
-    const handleSelectOwner = () => {
-      setUserRole('owner');
-      setOwnerData(prev => ({ ...prev, role: 'owner' }));
-      try {
-        localStorage.setItem('all_india_driver_selected_role', 'owner');
-      } catch {}
-
-      if (!isAuthenticated) {
-        setScreen('login');
-        return;
-      }
-
-      const savedOwner = localStorage.getItem('aid_saved_owner_profile');
-      if (savedOwner && JSON.parse(savedOwner)?.name) {
-        setScreen('owner-dashboard');
-      } else {
-        setScreen('owner-profile-setup');
-      }
-    };
-
-    const handleSelectMechanic = () => {
-      setUserRole('mechanic');
-      try {
-        localStorage.setItem('all_india_driver_selected_role', 'mechanic');
-      } catch {}
-
-      if (!isAuthenticated) {
-        setScreen('login');
-        return;
-      }
-
-      const savedMech = localStorage.getItem('insforge_real_mechanics_v2');
-      if (savedMech && JSON.parse(savedMech)?.length > 0) {
-        setScreen('mechanic-dashboard');
-      } else {
-        setScreen('mechanic-profile-setup');
+      if (selectedCardRole === 'driver') {
+        const savedDriver = localStorage.getItem('aid_saved_driver_profile');
+        if (savedDriver && JSON.parse(savedDriver)?.name) {
+          setScreen('driver-dashboard');
+        } else {
+          setScreen('driver-profile-setup');
+        }
+      } else if (selectedCardRole === 'owner') {
+        const savedOwner = localStorage.getItem('aid_saved_owner_profile');
+        if (savedOwner && JSON.parse(savedOwner)?.name) {
+          setScreen('owner-dashboard');
+        } else {
+          setScreen('owner-profile-setup');
+        }
+      } else if (selectedCardRole === 'mechanic') {
+        const savedMech = localStorage.getItem('insforge_real_mechanics_v2');
+        if (savedMech && JSON.parse(savedMech)?.length > 0) {
+          setScreen('mechanic-dashboard');
+        } else {
+          setScreen('mechanic-profile-setup');
+        }
       }
     };
 
     return (
-      <div className="min-h-screen bg-[#070B12] text-white flex flex-col justify-between py-6 px-4 sm:px-6 w-full font-sans transition-colors duration-200">
-        <div className="w-full max-w-7xl mx-auto space-y-6">
-          
-          {/* Top Control Header with Back & Account Info */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+      <div className="min-h-screen bg-[#0B0B0C] text-white flex flex-col justify-between p-6 sm:p-8 select-none max-w-md mx-auto w-full font-sans transition-colors duration-200">
+        
+        {/* Top Header: Back Button & Step 1 / 2 Indicator */}
+        <div className="w-full pt-2">
+          <div className="flex items-center justify-between pb-3">
             <button
               type="button"
-              onClick={() => setScreen('language')}
-              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-[#121927] hover:bg-[#1A2338] text-gray-200 hover:text-white transition-all cursor-pointer border border-white/10 flex items-center gap-1.5 text-xs font-semibold min-h-[40px]"
-              title="भाषा चुनें पर वापस जाएं"
+              onClick={() => setScreen('intro')}
+              className="h-11 w-11 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white cursor-pointer transition-all active:scale-95 shadow-sm"
+              title="पीछे जाएं (Go Back)"
             >
-              <ArrowLeft className="h-4 w-4 text-[#00B4D8]" />
-              <span>भाषा (Language)</span>
+              <ArrowLeft className="h-5 w-5 text-white" />
             </button>
-
-            {/* Authenticated User Badge or Step 1 Indicator */}
-            {isAuthenticated ? (
-              <div className="bg-[#0F172A] border border-white/15 rounded-xl px-3.5 py-1.5 flex items-center gap-2.5">
-                <div className="h-6 w-6 rounded-full flex items-center justify-center shrink-0 text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                  {verifiedPhone ? <Smartphone className="h-3 w-3" /> : <Mail className="h-3 w-3" />}
-                </div>
-                <div className="text-left text-xs">
-                  <span className="text-[10px] text-emerald-400 font-semibold block leading-tight">
-                    ✓ {verifiedPhone ? 'Phone verified' : 'Email verified'}
-                  </span>
-                  <span className="font-bold text-white text-xs truncate max-w-[140px] sm:max-w-[220px] block">
-                    {displayAccount}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    localStorage.removeItem('all_india_driver_is_authenticated');
-                    localStorage.removeItem('all_india_driver_verified_phone');
-                    localStorage.removeItem('all_india_driver_user_phone');
-                    localStorage.removeItem('all_india_driver_user_email');
-                    setUserEmail('');
-                    setScreen('login');
-                  }}
-                  className="ml-1 text-[10px] text-gray-400 hover:text-white underline cursor-pointer"
-                  title="लॉगआउट / दूसरा खाता चुनें"
-                >
-                  बदलें
-                </button>
-              </div>
-            ) : (
-              <div className="bg-[#0F172A] border border-cyan-500/30 rounded-xl px-3 sm:px-4 py-1.5 flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
-                <span className="text-xs font-bold text-cyan-300">
-                  चरण 1: भूमिका चुनें ➔ चरण 2: लॉगिन
-                </span>
-              </div>
-            )}
-
-            <div className="flex items-center gap-2">
-              {!isAuthenticated && (
-                <button
-                  type="button"
-                  onClick={() => setScreen('login')}
-                  className="px-3 py-1.5 rounded-xl bg-cyan-500/15 border border-cyan-400/40 hover:bg-cyan-500/25 text-cyan-300 transition-all cursor-pointer flex items-center gap-1.5 text-xs font-bold min-h-[40px]"
-                  title="सीधे लॉगिन पर जाएं"
-                >
-                  <Lock className="h-3.5 w-3.5 text-cyan-400" />
-                  <span>🔑 लॉगिन</span>
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => setShowShareModal(true)}
-                className="px-3 py-1.5 rounded-xl bg-[#121927] border border-white/10 hover:border-[#00B4D8] text-white transition-all cursor-pointer flex items-center gap-1.5 text-xs font-semibold min-h-[40px]"
-                title="ऐप दोस्तों को शेयर करें (Share App)"
-              >
-                <Share2 className="h-3.5 w-3.5 text-[#00B4D8]" />
-                <span className="hidden xs:inline">शेयर</span>
-              </button>
-            </div>
+            <span className="text-xs sm:text-sm font-bold text-gray-400">
+              Step 1 / 2
+            </span>
           </div>
 
-          {/* Main Top Header Display (Matching Uploaded Mockup) */}
-          <div className="text-center space-y-1.5 pt-2">
-            <div className="flex items-center justify-center gap-2.5">
-              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-2xl bg-cyan-500/15 border border-cyan-400/40 text-cyan-400 flex items-center justify-center shadow-[0_0_20px_rgba(0,180,216,0.35)]">
-                <Truck className="h-6 w-6 sm:h-7 sm:w-7" />
-              </div>
-              <h1 className="text-2xl sm:text-4xl font-black text-white font-display tracking-tight">
-                ALL INDIA DRIVER APP
-              </h1>
-            </div>
-            <p className="text-sm sm:text-base font-bold text-cyan-400 tracking-wide">
-              3 Roll Theme – Modern Dark UI
+          {/* Step Progress Bar (2 segments: Left Active Gold, Right Inactive) */}
+          <div className="flex items-center gap-2 w-full pt-1">
+            <div className="flex-1 h-1.5 rounded-full bg-[#FFC400]" />
+            <div className="flex-1 h-1.5 rounded-full bg-white/15" />
+          </div>
+        </div>
+
+        {/* Center Content: Title, Subtitle & 3 Role Cards (Labour Removed) */}
+        <div className="my-auto py-6 space-y-5 text-left">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black text-white leading-tight font-display tracking-tight">
+              {selectedLanguage === 'hi' ? 'Aap kaun hain?' : 'Who are you?'}
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-400 font-normal leading-relaxed mt-1.5">
+              {selectedLanguage === 'hi'
+                ? 'Apna role chuniye. Baad me badla nahi ja sakta.'
+                : 'Choose your role. Cannot be changed later.'}
             </p>
           </div>
 
-          {/* 3-COLUMN THEMED ROLES GRID (1 COL ON MOBILE, 3 COLS ON TABLET/DESKTOP) */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-7 items-stretch pt-2">
-
-            {/* ========================================================================= */}
-            {/* 1. DRIVER ROLE – BLUE THEME (Professional & Trustworthy)                   */}
-            {/* ========================================================================= */}
-            <div className="flex flex-col space-y-3">
-              {/* Header Pill */}
-              <div className="bg-[#0C1A30] border border-cyan-500/40 rounded-2xl py-2 px-4 text-center shadow-[0_0_15px_rgba(0,135,255,0.25)]">
-                <span className="block text-xs sm:text-sm font-extrabold text-cyan-400">
-                  1. Driver Role – Blue Theme
-                </span>
-                <span className="text-[11px] text-gray-300 font-medium">
-                  (Professional & Trustworthy)
-                </span>
-              </div>
-
-              {/* Card Container */}
-              <div className="card-driver-theme rounded-3xl p-5 sm:p-6 flex flex-col justify-between space-y-5 flex-1 relative overflow-hidden">
-                <div className="space-y-4">
-                  
-                  {/* Top Bar inside Card */}
-                  <div className="flex items-center justify-between pb-2 border-b border-cyan-500/20">
-                    <div className="flex items-center gap-2">
-                      <div className="h-7 w-7 rounded-full bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center text-cyan-300">
-                        <User className="h-4 w-4" />
-                      </div>
-                      <span className="text-xs font-black tracking-wide text-white font-display">
-                        ALL INDIA DRIVER APP
-                      </span>
-                    </div>
-                    <span className="px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400 text-cyan-300 text-xs font-bold flex items-center gap-1 shadow-xs">
-                      <span className="text-sm">✇</span> Driver
-                    </span>
-                  </div>
-
-                  {/* Form Fields: Full Name */}
-                  <div className="space-y-1 text-left">
-                    <label className="text-[11px] font-bold text-gray-300 uppercase tracking-wider block">
-                      पूरा नाम (FULL NAME) <span className="text-cyan-400">*</span>
-                    </label>
-                    <div className="relative">
-                      <User className="absolute left-3.5 top-3.5 h-4 w-4 text-cyan-400" />
-                      <input
-                        type="text"
-                        readOnly
-                        value="उदा. संजय पाटिल"
-                        className="input-driver-theme w-full pl-10 pr-3 min-h-[46px] rounded-xl text-sm font-medium outline-none cursor-default"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Form Fields: Mobile Number */}
-                  <div className="space-y-1 text-left">
-                    <label className="text-[11px] font-bold text-gray-300 uppercase tracking-wider block">
-                      मोबाइल नंबर (10-DIGIT MOBILE NUMBER) <span className="text-cyan-400">*</span>
-                    </label>
-                    <div className="relative">
-                      <Phone className="absolute left-3.5 top-3.5 h-4 w-4 text-cyan-400" />
-                      <input
-                        type="text"
-                        readOnly
-                        value="+91 10 अंकों का मोबाइल नंबर"
-                        className="input-driver-theme w-full pl-10 pr-3 min-h-[46px] rounded-xl text-sm font-medium outline-none cursor-default text-gray-300"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Gender Pills */}
-                  <div className="space-y-1 text-left">
-                    <label className="text-[11px] font-bold text-gray-300 block">
-                      लिंग / Gender
-                    </label>
-                    <div className="grid grid-cols-4 gap-1.5">
-                      <span className="py-2 px-1 text-center bg-[#0087FF] text-white font-bold text-xs rounded-xl shadow-[0_0_10px_rgba(0,135,255,0.5)]">
-                        पुरुष (M)
-                      </span>
-                      <span className="py-2 px-1 text-center bg-[#0A1424] border border-cyan-500/30 text-gray-400 font-semibold text-xs rounded-xl">
-                        महिला (F)
-                      </span>
-                      <span className="py-2 px-1 text-center bg-[#0A1424] border border-cyan-500/30 text-gray-400 font-semibold text-xs rounded-xl">
-                        अन्य
-                      </span>
-                      <span className="py-2 px-1 text-center bg-[#0A1424] border border-cyan-500/30 text-gray-400 font-semibold text-xs rounded-xl">
-                        कहना नहीं
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 2-Column: Experience & Vehicle Category */}
-                  <div className="grid grid-cols-2 gap-3 text-left">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-gray-300 block truncate">
-                        ड्राइविंग अनुभव (Years)
-                      </label>
-                      <div className="input-driver-theme py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-between">
-                        <span>📅 0+ साल</span>
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-gray-300 block truncate">
-                        वाहन प्रकार
-                      </label>
-                      <div className="input-driver-theme py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-between">
-                        <span>🚗 2-4 Wheeler</span>
-                        <span className="text-[10px] text-cyan-400">▼</span>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* Main Action Button */}
-                <div className="space-y-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={handleSelectDriver}
-                    className="btn-driver w-full py-4 text-sm sm:text-base font-bold shadow-[0_0_25px_rgba(0,135,255,0.6)] cursor-pointer"
-                  >
-                    <span>➔ Continue as Driver</span>
-                  </button>
-
-                  {/* Card Sub-Footer Tag */}
-                  <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-cyan-300 pt-1">
-                    <span className="text-sm">✇</span>
-                    <span>Driver | Connect • Drive • Earn</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* ========================================================================= */}
-            {/* 2. OWNER ROLE – GREEN THEME (Fresh & Reliable)                             */}
-            {/* ========================================================================= */}
-            <div className="flex flex-col space-y-3">
-              {/* Header Pill */}
-              <div className="bg-[#0A2419] border border-emerald-500/40 rounded-2xl py-2 px-4 text-center shadow-[0_0_15px_rgba(16,185,129,0.25)]">
-                <span className="block text-xs sm:text-sm font-extrabold text-emerald-400">
-                  2. Owner Role – Green Theme
-                </span>
-                <span className="text-[11px] text-gray-300 font-medium">
-                  (Fresh & Reliable)
-                </span>
-              </div>
-
-              {/* Card Container */}
-              <div className="card-owner-theme rounded-3xl p-5 sm:p-6 flex flex-col justify-between space-y-5 flex-1 relative overflow-hidden">
-                <div className="space-y-4">
-                  
-                  {/* Top Bar inside Card */}
-                  <div className="flex items-center justify-between pb-2 border-b border-emerald-500/20">
-                    <div className="flex items-center gap-2">
-                      <div className="h-7 w-7 rounded-full bg-emerald-500/20 border border-emerald-400/50 flex items-center justify-center text-emerald-300">
-                        <Users className="h-4 w-4" />
-                      </div>
-                      <span className="text-xs font-black tracking-wide text-white font-display">
-                        ALL INDIA DRIVER APP
-                      </span>
-                    </div>
-                    <span className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400 text-emerald-300 text-xs font-bold flex items-center gap-1 shadow-xs">
-                      <span className="text-sm">🚗</span> Owner
-                    </span>
-                  </div>
-
-                  {/* Form Fields: Full Name */}
-                  <div className="space-y-1 text-left">
-                    <label className="text-[11px] font-bold text-gray-300 uppercase tracking-wider block">
-                      पूरा नाम (FULL NAME) <span className="text-emerald-400">*</span>
-                    </label>
-                    <div className="relative">
-                      <User className="absolute left-3.5 top-3.5 h-4 w-4 text-emerald-400" />
-                      <input
-                        type="text"
-                        readOnly
-                        value="उदा. राजेश शर्मा"
-                        className="input-owner-theme w-full pl-10 pr-3 min-h-[46px] rounded-xl text-sm font-medium outline-none cursor-default"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Form Fields: Mobile Number */}
-                  <div className="space-y-1 text-left">
-                    <label className="text-[11px] font-bold text-gray-300 uppercase tracking-wider block">
-                      मोबाइल नंबर (10-DIGIT MOBILE NUMBER) <span className="text-emerald-400">*</span>
-                    </label>
-                    <div className="relative">
-                      <Phone className="absolute left-3.5 top-3.5 h-4 w-4 text-emerald-400" />
-                      <input
-                        type="text"
-                        readOnly
-                        value="+91 10 अंकों का मोबाइल नंबर"
-                        className="input-owner-theme w-full pl-10 pr-3 min-h-[46px] rounded-xl text-sm font-medium outline-none cursor-default text-gray-300"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Role Type Pills */}
-                  <div className="space-y-1 text-left">
-                    <label className="text-[11px] font-bold text-gray-300 block">
-                      भूमिका (Role)
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <span className="py-2 px-2 text-center bg-[#10B981] text-white font-bold text-xs rounded-xl shadow-[0_0_10px_rgba(16,185,129,0.5)]">
-                        वाहन मालिक
-                      </span>
-                      <span className="py-2 px-2 text-center bg-[#081B12] border border-emerald-500/30 text-gray-400 font-semibold text-xs rounded-xl">
-                        नौकरी देना
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Vehicle Type Dropdown Preview */}
-                  <div className="space-y-1 text-left">
-                    <label className="text-[11px] font-bold text-gray-300 block truncate">
-                      अपने वाहन का प्रकार चुनें
-                    </label>
-                    <div className="input-owner-theme py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-between">
-                      <span>🚗 कार / बाइक / ट्रक आदि</span>
-                      <span className="text-[10px] text-emerald-400">▼</span>
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* Main Action Button */}
-                <div className="space-y-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={handleSelectOwner}
-                    className="btn-owner w-full py-4 text-sm sm:text-base font-bold shadow-[0_0_25px_rgba(16,185,129,0.6)] cursor-pointer"
-                  >
-                    <span>+ Post Your Vehicle / Job</span>
-                  </button>
-
-                  {/* Card Sub-Footer Tag */}
-                  <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-300 pt-1">
-                    <span className="text-sm">🏠</span>
-                    <span>Owner | Post • Manage • Connect</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* ========================================================================= */}
-            {/* 3. MECHANIC ROLE – PURPLE THEME (Smart & Skilled)                          */}
-            {/* ========================================================================= */}
-            <div className="flex flex-col space-y-3">
-              {/* Header Pill */}
-              <div className="bg-[#1F112E] border border-purple-500/40 rounded-2xl py-2 px-4 text-center shadow-[0_0_15px_rgba(168,85,247,0.25)]">
-                <span className="block text-xs sm:text-sm font-extrabold text-purple-400">
-                  3. Mechanic Role – Purple Theme
-                </span>
-                <span className="text-[11px] text-gray-300 font-medium">
-                  (Smart & Skilled)
-                </span>
-              </div>
-
-              {/* Card Container */}
-              <div className="card-mechanic-theme rounded-3xl p-5 sm:p-6 flex flex-col justify-between space-y-5 flex-1 relative overflow-hidden">
-                <div className="space-y-4">
-                  
-                  {/* Top Bar inside Card */}
-                  <div className="flex items-center justify-between pb-2 border-b border-purple-500/20">
-                    <div className="flex items-center gap-2">
-                      <div className="h-7 w-7 rounded-full bg-purple-500/20 border border-purple-400/50 flex items-center justify-center text-purple-300">
-                        <Wrench className="h-4 w-4" />
-                      </div>
-                      <span className="text-xs font-black tracking-wide text-white font-display">
-                        ALL INDIA DRIVER APP
-                      </span>
-                    </div>
-                    <span className="px-3 py-1 rounded-full bg-purple-500/20 border border-purple-400 text-purple-300 text-xs font-bold flex items-center gap-1 shadow-xs">
-                      <span className="text-sm">🔧</span> Mechanic
-                    </span>
-                  </div>
-
-                  {/* Form Fields: Full Name */}
-                  <div className="space-y-1 text-left">
-                    <label className="text-[11px] font-bold text-gray-300 uppercase tracking-wider block">
-                      पूरा नाम (FULL NAME) <span className="text-purple-400">*</span>
-                    </label>
-                    <div className="relative">
-                      <User className="absolute left-3.5 top-3.5 h-4 w-4 text-purple-400" />
-                      <input
-                        type="text"
-                        readOnly
-                        value="उदा. अमित कुमार"
-                        className="input-mechanic-theme w-full pl-10 pr-3 min-h-[46px] rounded-xl text-sm font-medium outline-none cursor-default"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Form Fields: Mobile Number */}
-                  <div className="space-y-1 text-left">
-                    <label className="text-[11px] font-bold text-gray-300 uppercase tracking-wider block">
-                      मोबाइल नंबर (10-DIGIT MOBILE NUMBER) <span className="text-purple-400">*</span>
-                    </label>
-                    <div className="relative">
-                      <Phone className="absolute left-3.5 top-3.5 h-4 w-4 text-purple-400" />
-                      <input
-                        type="text"
-                        readOnly
-                        value="+91 10 अंकों का मोबाइल नंबर"
-                        className="input-mechanic-theme w-full pl-10 pr-3 min-h-[46px] rounded-xl text-sm font-medium outline-none cursor-default text-gray-300"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Skills Pills */}
-                  <div className="space-y-1 text-left">
-                    <label className="text-[11px] font-bold text-gray-300 block">
-                      विशेषज्ञता (Skills)
-                    </label>
-                    <div className="flex flex-wrap gap-1.5">
-                      <span className="py-1.5 px-2.5 text-center bg-[#A855F7] text-white font-bold text-xs rounded-xl shadow-[0_0_10px_rgba(168,85,247,0.5)]">
-                        Bike
-                      </span>
-                      <span className="py-1.5 px-2.5 text-center bg-[#170C22] border border-purple-500/30 text-gray-400 font-semibold text-xs rounded-xl">
-                        Car
-                      </span>
-                      <span className="py-1.5 px-2.5 text-center bg-[#170C22] border border-purple-500/30 text-gray-400 font-semibold text-xs rounded-xl">
-                        Truck
-                      </span>
-                      <span className="py-1.5 px-2.5 text-center bg-[#170C22] border border-purple-500/30 text-gray-400 font-semibold text-xs rounded-xl">
-                        Heavy Vehicle
-                      </span>
-                      <span className="py-1.5 px-2 text-center bg-[#170C22] border border-purple-500/30 text-purple-300 font-semibold text-xs rounded-xl">
-                        + More
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Service Area Dropdown Preview */}
-                  <div className="space-y-1 text-left">
-                    <label className="text-[11px] font-bold text-gray-300 block truncate">
-                      सर्विस एरिया
-                    </label>
-                    <div className="input-mechanic-theme py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-between">
-                      <div className="flex items-center gap-1 text-gray-300">
-                        <MapPin className="h-3.5 w-3.5 text-purple-400" />
-                        <span>अपने क्षेत्र का चयन करें</span>
-                      </div>
-                      <span className="text-[10px] text-purple-400">▼</span>
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* Main Action Button */}
-                <div className="space-y-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={handleSelectMechanic}
-                    className="btn-mechanic w-full py-4 text-sm sm:text-base font-bold shadow-[0_0_25px_rgba(168,85,247,0.6)] cursor-pointer"
-                  >
-                    <span>🔧 Become a Mechanic</span>
-                  </button>
-
-                  {/* Card Sub-Footer Tag */}
-                  <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-purple-300 pt-1">
-                    <span className="text-sm">🔧</span>
-                    <span>Mechanic | Repair • Service • Support</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Bottom Footer Tags & Tagline matching user mockup */}
-          <div className="pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
+          {/* 3 Role Selection Cards (Driver, Owner, Mechanic - NO LABOUR) */}
+          <div className="grid grid-cols-2 gap-3.5 pt-2">
             
-            {/* 4 Feature Pills */}
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              <span className="px-3 py-1.5 rounded-full bg-[#0D1627] border border-cyan-500/30 text-cyan-300 text-xs font-semibold flex items-center gap-1.5 shadow-xs">
-                <span>🛡️</span> Clean & Professional UI
-              </span>
-              <span className="px-3 py-1.5 rounded-full bg-[#0A2219] border border-emerald-500/30 text-emerald-300 text-xs font-semibold flex items-center gap-1.5 shadow-xs">
-                <span>🎨</span> Unique Theme for Each Roll
-              </span>
-              <span className="px-3 py-1.5 rounded-full bg-[#1A1227] border border-purple-500/30 text-purple-300 text-xs font-semibold flex items-center gap-1.5 shadow-xs">
-                <span>📱</span> Mobile Responsive
-              </span>
-              <span className="px-3 py-1.5 rounded-full bg-[#1E190A] border border-amber-500/30 text-amber-300 text-xs font-semibold flex items-center gap-1.5 shadow-xs">
-                <span>⚡</span> Fast & Easy Access
-              </span>
-            </div>
+            {/* 1. Driver Card */}
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCardRole('driver');
+                setUserRole('driver');
+              }}
+              className={`p-4 rounded-3xl text-left transition-all cursor-pointer flex flex-col justify-between min-h-[145px] active:scale-[0.98] ${
+                selectedCardRole === 'driver'
+                  ? 'border-2 border-[#FFC400] bg-[#FFC400]/10 shadow-[0_0_20px_rgba(255,196,0,0.15)] ring-1 ring-[#FFC400]/50'
+                  : 'border border-white/10 bg-[#16161A] hover:border-white/25 hover:bg-[#1C1C22]'
+              }`}
+            >
+              <div className={`h-11 w-11 rounded-2xl flex items-center justify-center transition-colors shadow-sm mb-3 ${
+                selectedCardRole === 'driver'
+                  ? 'bg-[#FFC400] text-gray-950'
+                  : 'bg-white/5 text-gray-300 border border-white/10'
+              }`}>
+                <SteeringWheelIcon className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-black text-white leading-tight">
+                  Driver
+                </h3>
+                <p className="text-xs text-gray-400 font-medium leading-snug mt-1">
+                  {selectedLanguage === 'hi' ? 'Gaadi chalane ka kaam chahiye' : 'Looking for driving work'}
+                </p>
+              </div>
+            </button>
 
-            {/* Tagline on Right */}
-            <div className="text-center md:text-right">
-              <span className="block text-sm sm:text-base font-bold text-cyan-400 italic font-display">
-                One App – Three Roles
-              </span>
-              <span className="block text-xs sm:text-sm font-semibold text-gray-400 italic">
-                A Complete Driving Ecosystem
-              </span>
-            </div>
+            {/* 2. Owner Card */}
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCardRole('owner');
+                setUserRole('owner');
+              }}
+              className={`p-4 rounded-3xl text-left transition-all cursor-pointer flex flex-col justify-between min-h-[145px] active:scale-[0.98] ${
+                selectedCardRole === 'owner'
+                  ? 'border-2 border-[#FFC400] bg-[#FFC400]/10 shadow-[0_0_20px_rgba(255,196,0,0.15)] ring-1 ring-[#FFC400]/50'
+                  : 'border border-white/10 bg-[#16161A] hover:border-white/25 hover:bg-[#1C1C22]'
+              }`}
+            >
+              <div className={`h-11 w-11 rounded-2xl flex items-center justify-center transition-colors shadow-sm mb-3 ${
+                selectedCardRole === 'owner'
+                  ? 'bg-[#FFC400] text-gray-950'
+                  : 'bg-white/5 text-gray-300 border border-white/10'
+              }`}>
+                <Truck className="h-6 w-6" strokeWidth={2.2} />
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-black text-white leading-tight">
+                  Owner
+                </h3>
+                <p className="text-xs text-gray-400 font-medium leading-snug mt-1">
+                  {selectedLanguage === 'hi' ? 'Gaadi ke liye driver chahiye' : 'Looking for drivers'}
+                </p>
+              </div>
+            </button>
+
+            {/* 3. Mechanic Card (Spans 2 columns) */}
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCardRole('mechanic');
+                setUserRole('mechanic');
+              }}
+              className={`col-span-2 p-4 rounded-3xl text-left transition-all cursor-pointer flex items-center gap-4 active:scale-[0.98] ${
+                selectedCardRole === 'mechanic'
+                  ? 'border-2 border-[#FFC400] bg-[#FFC400]/10 shadow-[0_0_20px_rgba(255,196,0,0.15)] ring-1 ring-[#FFC400]/50'
+                  : 'border border-white/10 bg-[#16161A] hover:border-white/25 hover:bg-[#1C1C22]'
+              }`}
+            >
+              <div className={`h-11 w-11 rounded-2xl flex items-center justify-center transition-colors shadow-sm shrink-0 ${
+                selectedCardRole === 'mechanic'
+                  ? 'bg-[#FFC400] text-gray-950'
+                  : 'bg-white/5 text-gray-300 border border-white/10'
+              }`}>
+                <Wrench className="h-6 w-6" strokeWidth={2.2} />
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-black text-white leading-tight">
+                  Mechanic
+                </h3>
+                <p className="text-xs text-gray-400 font-medium leading-snug mt-1">
+                  {selectedLanguage === 'hi' ? 'Gaadi theek karne ka kaam' : 'Vehicle repair and maintenance work'}
+                </p>
+              </div>
+            </button>
 
           </div>
+        </div>
 
+        {/* Bottom Actions: Solid "Aage badhein" Button & Login Link */}
+        <div className="space-y-3.5 w-full pb-4">
+          <button
+            type="button"
+            onClick={handleProceed}
+            className="w-full py-4 px-6 bg-[#FFC400] hover:bg-amber-400 active:scale-[0.99] text-gray-950 font-black text-base rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20 transition-all cursor-pointer min-h-[52px]"
+          >
+            {selectedLanguage === 'hi' ? 'Aage badhein' : 'Continue'}
+          </button>
+
+          <div className="text-xs sm:text-sm text-gray-400 text-center pt-2">
+            <span>{selectedLanguage === 'hi' ? 'Pehle se account hai? ' : 'Already have an account? '}</span>
+            <button
+              type="button"
+              onClick={() => setScreen('login')}
+              className="font-bold text-white hover:text-[#FFC400] underline ml-1 cursor-pointer transition-colors"
+            >
+              Login
+            </button>
+          </div>
         </div>
 
         {/* Share App Modal */}
