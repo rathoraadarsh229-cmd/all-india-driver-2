@@ -16,6 +16,12 @@
     </noscript>
   </head>
   <body class="bg-[#141417] text-white">
+    <script>
+      // When opened on GitHub Pages, redirect instantly to the live production app on Vercel
+      if (window.location.hostname && window.location.hostname.includes('github.io')) {
+        window.location.replace("https://all-india-driver-app.vercel.app/");
+      }
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
