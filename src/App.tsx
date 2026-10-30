@@ -51,15 +51,16 @@ export default function App() {
     return 'app';
   });
 
-  // App Navigation & Role States - Default to 'role-selection' for onboarding
+  // App Navigation & Role States - Default to 'intro' (Welcome Screen) for onboarding
   const [currentScreen, setCurrentScreen] = useState<AppScreen>(() => {
     try {
+      const isAuth = localStorage.getItem('all_india_driver_is_authenticated') === 'true';
       const saved = localStorage.getItem('aid_current_screen') as AppScreen;
-      if (saved && ['role-selection', 'login', 'driver-dashboard', 'owner-dashboard', 'mechanic-dashboard'].includes(saved)) {
+      if (isAuth && saved && ['driver-dashboard', 'owner-dashboard', 'mechanic-dashboard'].includes(saved)) {
         return saved;
       }
     } catch {}
-    return 'role-selection';
+    return 'intro';
   });
   const [userRole, setUserRole] = useState<'driver' | 'owner' | 'mechanic' | null>(() => {
     try {
@@ -294,7 +295,8 @@ export default function App() {
   // Render Realtime App Portal
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col font-sans selection:bg-[var(--primary)] selection:text-[var(--primary-text)] transition-colors duration-200">
-      {/* Top Banner: Connected Navigation Bar Across App & Website */}
+      {/* Top Banner: Connected Navigation Bar Across App & Website (Hidden during Splash/Onboarding) */}
+      {!['splash', 'intro', 'login', 'role-selection'].includes(currentScreen) && (
       <header className="sticky top-0 z-50 bg-[var(--card)]/95 backdrop-blur-md border-b border-[var(--card-border)] px-4 sm:px-6 py-2.5 text-xs transition-colors duration-200">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
           
@@ -522,6 +524,7 @@ export default function App() {
           </div>
         )}
       </header>
+      )}
 
       {/* Main Interactive App Workspaces */}
       <main className="flex-1">
