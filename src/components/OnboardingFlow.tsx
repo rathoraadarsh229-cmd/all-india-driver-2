@@ -74,6 +74,7 @@ export function OnboardingFlow({
   const [selectedCardRole, setSelectedCardRole] = useState<'driver' | 'owner' | 'mechanic'>(() => {
     return userRole || 'driver';
   });
+  const [loginMode, setLoginMode] = useState<'login' | 'signup'>('login');
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isOwnerListening, setIsOwnerListening] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(true);
@@ -614,7 +615,10 @@ export function OnboardingFlow({
         <div className="space-y-3.5 w-full pb-4">
           <button
             type="button"
-            onClick={() => setScreen('login')}
+            onClick={() => {
+              setLoginMode('login');
+              setScreen('login');
+            }}
             className="w-full py-4 px-6 bg-[#FFC400] hover:bg-amber-400 active:scale-[0.99] text-gray-950 font-black text-base rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20 transition-all cursor-pointer min-h-[52px]"
           >
             Login
@@ -622,7 +626,10 @@ export function OnboardingFlow({
 
           <button
             type="button"
-            onClick={() => setScreen('role-selection')}
+            onClick={() => {
+              setLoginMode('signup');
+              setScreen('login');
+            }}
             className="w-full py-4 px-6 bg-transparent hover:bg-white/5 active:scale-[0.99] text-white border-2 border-white/20 hover:border-white/40 font-black text-base rounded-2xl flex items-center justify-center transition-all cursor-pointer min-h-[52px]"
           >
             Sign up
@@ -892,14 +899,20 @@ export function OnboardingFlow({
 
           {/* Large Bold Headline */}
           <h1 className="text-2xl sm:text-3xl font-black text-white leading-tight font-display tracking-tight">
-            {selectedLanguage === 'hi' ? 'Wapas aaye, swagat hai' : 'Welcome back'}
+            {loginMode === 'signup'
+              ? (selectedLanguage === 'hi' ? 'Naya account banayein' : 'Create an Account')
+              : (selectedLanguage === 'hi' ? 'Wapas aaye, swagat hai' : 'Welcome back')}
           </h1>
 
           {/* Subtitle */}
           <p className="text-sm sm:text-base text-gray-400 font-normal leading-relaxed mt-2 max-w-sm">
-            {selectedLanguage === 'hi'
-              ? 'Apne Google account se login karein aur apna dashboard kholein.'
-              : 'Log in with your Google account to access your dashboard.'}
+            {loginMode === 'signup'
+              ? (selectedLanguage === 'hi'
+                  ? 'Pehle apne Google account se verify karein aur aage badhein.'
+                  : 'First verify with your Google account to create your profile.')
+              : (selectedLanguage === 'hi'
+                  ? 'Apne Google account se login karein aur apna dashboard kholein.'
+                  : 'Log in with your Google account to access your dashboard.')}
           </p>
 
           {error && (
@@ -937,15 +950,22 @@ export function OnboardingFlow({
           </div>
         </div>
 
-        {/* Bottom Footer: "Naya account? Sign up" */}
+        {/* Bottom Footer: Toggle between Login and Sign up */}
         <div className="text-xs sm:text-sm text-gray-400 text-center pb-4 pt-4">
-          <span>{selectedLanguage === 'hi' ? 'Naya account? ' : 'New account? '}</span>
+          <span>
+            {loginMode === 'signup'
+              ? (selectedLanguage === 'hi' ? 'Pehle se account hai? ' : 'Already have an account? ')
+              : (selectedLanguage === 'hi' ? 'Naya account? ' : 'New account? ')}
+          </span>
           <button
             type="button"
-            onClick={() => setScreen('role-selection')}
+            onClick={() => {
+              setError('');
+              setLoginMode(loginMode === 'signup' ? 'login' : 'signup');
+            }}
             className="font-bold text-white hover:text-[#FFC400] underline ml-1 cursor-pointer transition-colors"
           >
-            Sign up
+            {loginMode === 'signup' ? 'Login' : 'Sign up'}
           </button>
         </div>
 
@@ -963,14 +983,25 @@ export function OnboardingFlow({
   // SCREEN 3: ROLE SELECTION (STEP 1/2) (Labour Option Removed • Website Dark Theme)
   if (currentStep === 'role-selection') {
     const handleProceed = () => {
+      // User MUST be verified with Google before entering the app
+      const isGoogleVerified = localStorage.getItem('all_india_driver_google_verified') === 'true' ||
+        localStorage.getItem('all_india_driver_is_authenticated') === 'true';
+
+      if (!isGoogleVerified) {
+        setError(selectedLanguage === 'hi' 
+          ? 'कृपया पहले Google से साइन इन / वेरीफाई करें।' 
+          : 'Please sign in with Google first to verify your account.');
+        setLoginMode('signup');
+        setScreen('login');
+        return;
+      }
+
       setUserRole(selectedCardRole);
       try {
         localStorage.setItem('all_india_driver_selected_role', selectedCardRole);
         localStorage.setItem('all_india_driver_is_authenticated', 'true');
         localStorage.setItem('all_india_driver_auth_type', 'gmail');
-        if (!localStorage.getItem('all_india_driver_user_email')) {
-          localStorage.setItem('all_india_driver_user_email', 'rathoraadarsh229@gmail.com');
-        }
+        localStorage.setItem('all_india_driver_google_verified', 'true');
       } catch {}
 
       if (selectedCardRole === 'driver') {
