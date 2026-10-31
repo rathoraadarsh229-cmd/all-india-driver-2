@@ -18,6 +18,7 @@ import {
   UserAuthType 
 } from './types';
 import { fetchDriversFromInsForge } from './services/insforgeService';
+import { insforge } from './insforge';
 
 export default function App() {
   // Master View Mode: 'website' (Default: Marketing Site) or 'app' (Interactive Portal)
@@ -231,24 +232,66 @@ export default function App() {
   const [replacementCredits, setReplacementCredits] = useState<number>(3);
   const [reportedDriverIds, setReportedDriverIds] = useState<string[]>([]);
 
+  // Complete User Logout: clears all session tokens and local state
+  const handleLogout = useCallback(async () => {
+    try {
+      await insforge.auth.signOut();
+    } catch {}
+    try {
+      localStorage.removeItem('all_india_driver_is_authenticated');
+      localStorage.removeItem('all_india_driver_google_verified');
+      localStorage.removeItem('all_india_driver_auth_type');
+      localStorage.removeItem('all_india_driver_user_email');
+      localStorage.removeItem('all_india_driver_verified_email');
+      localStorage.removeItem('all_india_driver_selected_role');
+      localStorage.removeItem('aid_current_screen');
+    } catch {}
+    setUserRole(null);
+    setCurrentScreen('intro');
+    setViewMode('website');
+  }, []);
+
+  // Complete User Account Deletion: permanently wipes all local profile and session data
+  const handleDeleteAccount = useCallback(async () => {
+    try {
+      await insforge.auth.signOut();
+    } catch {}
+    try {
+      localStorage.clear();
+    } catch {}
+    setUserRole(null);
+    setCurrentScreen('intro');
+    setViewMode('website');
+  }, []);
+
   // Deep Link Handler: Launch App Screen
   const handleLaunchApp = useCallback((
     screen?: AppScreen, 
     role?: 'driver' | 'owner' | 'mechanic'
   ) => {
+    const isAuth = localStorage.getItem('all_india_driver_is_authenticated') === 'true';
+    const savedRole = (localStorage.getItem('all_india_driver_selected_role') as any) || userRole || role;
+
     if (role) {
       setUserRole(role);
       try {
         localStorage.setItem('all_india_driver_selected_role', role);
       } catch {}
     }
-    if (screen) {
+
+    if (isAuth && savedRole) {
+      // User is already logged in! Go straight to their dashboard, never to login/intro!
+      if (savedRole === 'driver') setCurrentScreen('driver-dashboard');
+      else if (savedRole === 'owner') setCurrentScreen('owner-dashboard');
+      else if (savedRole === 'mechanic') setCurrentScreen('mechanic-dashboard');
+      else setCurrentScreen('driver-dashboard');
+    } else if (screen) {
       setCurrentScreen(screen);
     } else {
       if (role === 'driver' || userRole === 'driver') setCurrentScreen('driver-dashboard');
       else if (role === 'owner' || userRole === 'owner') setCurrentScreen('owner-dashboard');
       else if (role === 'mechanic' || userRole === 'mechanic') setCurrentScreen('mechanic-dashboard');
-      else setCurrentScreen('role-selection');
+      else setCurrentScreen('intro');
     }
     setViewMode('app');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -312,6 +355,10 @@ export default function App() {
         onBookWithEstimate={handleBookWithEstimate}
         theme={theme}
         toggleTheme={toggleTheme}
+        isAuthenticated={localStorage.getItem('all_india_driver_is_authenticated') === 'true'}
+        userEmail={userEmail}
+        userRole={userRole}
+        onLogout={handleLogout}
       />
     );
   }
