@@ -20,6 +20,7 @@ import {
   AlertTriangle,
   Sun,
   Moon,
+  Trash2,
   type LucideIcon
 } from 'lucide-react';
 import { UserAuthBadge } from './UserAuthBadge';
@@ -47,6 +48,7 @@ interface DashboardShellProps {
   onLanguageChange?: (langCode: string) => void;
   onSwitchRoleClick?: () => void;
   onLogoutClick?: () => void;
+  onDeleteAccountClick?: () => void;
   onDonateClick?: () => void;
   onOpenSOS?: () => void;
   onOpenAiAssistant?: () => void;
@@ -72,6 +74,7 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
   onLanguageChange,
   onSwitchRoleClick,
   onLogoutClick,
+  onDeleteAccountClick,
   onDonateClick,
   onOpenSOS,
   onOpenAiAssistant,
@@ -349,12 +352,29 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
                   <button
                     type="button"
                     onClick={onLogoutClick}
-                    className="w-full py-3.5 px-4 bg-red-950/40 hover:bg-red-950/60 text-red-400 font-bold text-xs rounded-xl flex items-center justify-between border border-red-900/40 transition-colors"
+                    className="w-full py-3.5 px-4 bg-red-950/40 hover:bg-red-950/60 text-red-400 font-bold text-xs rounded-xl flex items-center justify-between border border-red-900/40 transition-colors cursor-pointer"
                   >
                     <span>लॉग आउट / Sign Out</span>
                     <LogOut className="h-4 w-4 text-red-400" />
                   </button>
                 )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const confirmMsg = selectedLanguage === 'hi' 
+                      ? 'क्या आप वाकई अपना खाता हमेशा के लिए हटाना चाहते हैं? आपका सारा डेटा मिटा दिया जाएगा और फिर से साइन इन करना होगा।' 
+                      : 'Are you sure you want to permanently delete your account? All your data will be erased.';
+                    if (window.confirm(confirmMsg)) {
+                      if (onDeleteAccountClick) onDeleteAccountClick();
+                      else if (onLogoutClick) onLogoutClick();
+                    }
+                  }}
+                  className="w-full py-2.5 px-4 bg-transparent hover:bg-red-500/10 text-red-500/70 hover:text-red-400 font-bold text-[11px] rounded-xl flex items-center justify-between transition-colors cursor-pointer border border-transparent hover:border-red-500/20"
+                >
+                  <span>अकाउंट डिलीट करें / Delete Account</span>
+                  <Trash2 className="h-3.5 w-3.5 text-red-500/70" />
+                </button>
               </div>
             </div>
           </div>
