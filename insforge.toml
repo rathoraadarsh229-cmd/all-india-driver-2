@@ -11,7 +11,11 @@ allowed_redirect_urls = [
   "https://ais-dev-re2663gtvtceq5idf3xfrk-20227451905.asia-southeast1.run.app/**",
   "https://ais-pre-re2663gtvtceq5idf3xfrk-20227451905.asia-southeast1.run.app/**",
   "https://nuf662tj.insforge.site",
-  "https://nuf662tj.insforge.site/**"
+  "https://nuf662tj.insforge.site/**",
+  "https://all-india-driver-app.vercel.app",
+  "https://all-india-driver-app.vercel.app/**",
+  "https://rathoraadarsh229-cmd.github.io/all-india-driver-2",
+  "https://rathoraadarsh229-cmd.github.io/all-india-driver-2/**"
 ]
 require_email_verification = true
 verify_email_method = "code"

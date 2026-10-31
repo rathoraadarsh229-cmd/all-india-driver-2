@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { insforge } from '../insforge';
 import { 
   Wrench, 
   Phone, 
@@ -34,7 +35,12 @@ interface Props {
   selectedLanguage?: string;
   setSelectedLanguage?: (lang: string) => void;
   authType?: UserAuthType;
+  userEmail?: string;
   onOpenDonate?: () => void;
+  onOpenAiAssistant?: () => void;
+  onGoToWebsite?: () => void;
+  theme?: 'light' | 'dark';
+  onToggleTheme?: () => void;
 }
 
 export const MechanicDashboard: React.FC<Props> = ({
@@ -44,7 +50,12 @@ export const MechanicDashboard: React.FC<Props> = ({
   selectedLanguage = 'hi',
   setSelectedLanguage,
   authType = 'gmail',
-  onOpenDonate
+  userEmail,
+  onOpenDonate,
+  onOpenAiAssistant,
+  onGoToWebsite,
+  theme,
+  onToggleTheme
 }) => {
   const t = getT(selectedLanguage);
   const [activeTab, setActiveTab] = useState<DashboardTab>('home');
@@ -159,6 +170,12 @@ export const MechanicDashboard: React.FC<Props> = ({
   return (
     <DashboardShell
       appName={t('appName', 'ALL INDIA DRIVER APP')}
+      roleKey="mechanic"
+      userEmail={userEmail}
+      onOpenAiAssistant={onOpenAiAssistant}
+      onGoToWebsite={onGoToWebsite}
+      theme={theme}
+      onToggleTheme={onToggleTheme}
       userName={activeMech?.garageName || activeMech?.name || 'मास्टर मैकेनिक'}
       userPhone={activeMech?.phone || 'फ़ोन नंबर दर्ज नहीं'}
       userRoleTitle="मैकेनिक गैरेज"
@@ -171,11 +188,29 @@ export const MechanicDashboard: React.FC<Props> = ({
       selectedLanguage={selectedLanguage}
       onLanguageChange={setSelectedLanguage}
       onSwitchRoleClick={() => setScreen('role-selection')}
-      onLogoutClick={() => {
+      onLogoutClick={async () => {
+        try {
+          await insforge.auth.signOut();
+        } catch {}
         try {
           localStorage.removeItem('all_india_driver_is_authenticated');
+          localStorage.removeItem('all_india_driver_google_verified');
+          localStorage.removeItem('all_india_driver_auth_type');
+          localStorage.removeItem('all_india_driver_user_email');
+          localStorage.removeItem('all_india_driver_verified_email');
+          localStorage.removeItem('all_india_driver_selected_role');
+          localStorage.removeItem('aid_current_screen');
         } catch {}
-        setScreen('login');
+        setScreen('intro');
+      }}
+      onDeleteAccountClick={async () => {
+        try {
+          await insforge.auth.signOut();
+        } catch {}
+        try {
+          localStorage.clear();
+        } catch {}
+        setScreen('intro');
       }}
       onDonateClick={onOpenDonate}
     >

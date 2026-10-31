@@ -11,6 +11,7 @@ import { DriverProfile, AppScreen } from '../types';
 import { HighwayAiChatModal } from './HighwayAiChatModal';
 import { SafetyReminderModal, SafetyScenario } from './SafetyReminderModal';
 import { LegalTermsPrivacyModal, LegalDocType } from './LegalTermsPrivacyModal';
+import { GoogleLogoSvg } from './UserAuthBadge';
 import { 
   INDIAN_CITIES_COORDS, 
   fetchOsrmDistance, 
@@ -27,6 +28,10 @@ interface WebsiteViewProps {
   onNavigatePage?: (page: string) => void;
   theme?: 'light' | 'dark';
   toggleTheme?: () => void;
+  isAuthenticated?: boolean;
+  userEmail?: string;
+  userRole?: 'driver' | 'owner' | 'mechanic' | null;
+  onLogout?: () => void;
 }
 
 export const WebsiteView: React.FC<WebsiteViewProps> = ({
@@ -37,7 +42,11 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
   onBookWithEstimate,
   onNavigatePage,
   theme = 'light',
-  toggleTheme
+  toggleTheme,
+  isAuthenticated = false,
+  userEmail = '',
+  userRole = null,
+  onLogout
 }) => {
   // Navigation & UI States
   const [activeSection, setActiveSection] = useState<string>('overview');
@@ -389,13 +398,47 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
               </button>
             )}
 
-            {/* Direct Login Button */}
-            <button
-              onClick={() => onLaunchApp('login')}
-              className="bg-[var(--primary)] text-[var(--primary-text)] font-bold px-4 py-1 rounded-full hover:bg-[var(--primary-hover)] transition-all shadow-sm cursor-pointer text-xs"
-            >
-              {lang === 'hi' ? 'लॉगिन / प्रवेश' : 'Sign In'}
-            </button>
+            {/* User Account / Direct Login Button */}
+            {isAuthenticated ? (
+              <div className="flex items-center gap-2">
+                {/* Visible Verified Google Account Pill */}
+                <div className="flex items-center gap-1.5 bg-[#16161A] border border-[#FFC400]/40 px-3 py-1 rounded-full text-xs font-bold text-white shadow-xs">
+                  <GoogleLogoSvg className="w-3.5 h-3.5 shrink-0" />
+                  <span className="max-w-[140px] sm:max-w-[190px] truncate">{userEmail || 'rathoraadarsh229@gmail.com'}</span>
+                  <span className="text-emerald-400 font-black text-[10px]">✓</span>
+                </div>
+
+                <button
+                  onClick={() => onLaunchApp()}
+                  className="bg-[#FFC400] text-gray-950 font-black px-3.5 py-1 rounded-full hover:bg-amber-400 transition-all shadow-sm cursor-pointer text-xs flex items-center gap-1.5"
+                >
+                  <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+                  <span>
+                    {userRole === 'driver' ? (lang === 'hi' ? 'ड्राइवर डैशबोर्ड' : 'Driver Dashboard') :
+                     userRole === 'owner' ? (lang === 'hi' ? 'मालिक डैशबोर्ड' : 'Owner Dashboard') :
+                     userRole === 'mechanic' ? (lang === 'hi' ? 'मैकेनिक डैशबोर्ड' : 'Mechanic Dashboard') :
+                     (lang === 'hi' ? 'डैशबोर्ड' : 'Dashboard')}
+                  </span>
+                </button>
+                {onLogout && (
+                  <button
+                    onClick={onLogout}
+                    className="bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold px-2.5 py-1 rounded-full border border-red-500/30 text-xs transition-all cursor-pointer"
+                    title={lang === 'hi' ? 'लॉग आउट' : 'Log out'}
+                  >
+                    {lang === 'hi' ? 'लॉग आउट' : 'Logout'}
+                  </button>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => onLaunchApp('login')}
+                className="bg-[#FFC400] text-gray-950 font-black px-3.5 py-1.5 rounded-full hover:bg-amber-400 transition-all shadow-sm cursor-pointer text-xs flex items-center gap-1.5"
+              >
+                <GoogleLogoSvg className="w-3.5 h-3.5 shrink-0" />
+                <span>{lang === 'hi' ? 'Google लॉगिन / प्रवेश' : 'Sign in with Google'}</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -492,10 +535,10 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
           {/* Quick Action CTAs */}
           <div className="flex items-center gap-3">
             <button
-              onClick={() => onLaunchApp('role-selection')}
+              onClick={() => onLaunchApp(isAuthenticated ? undefined : 'intro')}
               className="bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-[var(--primary-text)] font-bold text-xs px-5 py-2.5 rounded-xl shadow-sm transition-all cursor-pointer hidden sm:inline-flex items-center gap-1.5"
             >
-              <span>{lang === 'hi' ? 'ऐप पोर्टल खोलें' : 'Open Portal'}</span>
+              <span>{isAuthenticated ? (lang === 'hi' ? 'डैशबोर्ड खोलें' : 'Open Dashboard') : (lang === 'hi' ? 'ऐप पोर्टल खोलें' : 'Open Portal')}</span>
               <ChevronRight className="w-4 h-4" />
             </button>
 
@@ -562,12 +605,44 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
               FAQ
             </button>
             <div className="pt-2 flex flex-col gap-2">
+              {isAuthenticated && (
+                <div className="p-3 bg-[#16161A] border border-[#FFC400]/40 rounded-2xl flex items-center gap-3 text-left">
+                  <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center shrink-0 shadow-xs">
+                    <GoogleLogoSvg className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-black text-white truncate">{userEmail || 'rathoraadarsh229@gmail.com'}</span>
+                      <span className="text-emerald-400 font-black text-[10px]">✓</span>
+                    </div>
+                    <span className="text-[10px] text-gray-400 font-medium block">
+                      {userRole ? `${userRole.toUpperCase()} • Google Verified` : 'Google Verified Account'}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               <button
-                onClick={() => onLaunchApp('role-selection')}
-                className="w-full py-2.5 bg-[var(--primary)] text-[var(--primary-text)] font-bold text-xs uppercase tracking-wider rounded-xl text-center shadow-sm"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onLaunchApp(isAuthenticated ? undefined : 'login');
+                }}
+                className="w-full py-2.5 bg-[#FFC400] text-gray-950 font-black text-xs uppercase tracking-wider rounded-xl text-center shadow-sm flex items-center justify-center gap-2"
               >
-                {lang === 'hi' ? 'ऐप पोर्टल खोलें' : 'Open App Portal'}
+                {!isAuthenticated && <GoogleLogoSvg className="w-4 h-4 shrink-0" />}
+                <span>{isAuthenticated ? (lang === 'hi' ? 'डैशबोर्ड खोलें' : 'Open Dashboard') : (lang === 'hi' ? 'Google से लॉगिन करें' : 'Sign in with Google')}</span>
               </button>
+              {isAuthenticated && onLogout && (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onLogout();
+                  }}
+                  className="w-full py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs rounded-xl text-center border border-red-500/30"
+                >
+                  {lang === 'hi' ? 'लॉग आउट' : 'Log out'}
+                </button>
+              )}
             </div>
             {toggleTheme && (
               <div className="pt-2 border-t border-[var(--card-border)] flex items-center justify-between px-2">
@@ -618,7 +693,7 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
               {/* CTAs: [ड्राइवर बुक करें] and [ड्राइवर के रूप में जुड़ें] */}
               <div className="flex flex-wrap items-center gap-4 pt-2">
                 <button
-                  onClick={() => onLaunchApp('role-selection', 'owner')}
+                  onClick={() => onLaunchApp('intro', 'owner')}
                   className="bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-[var(--primary-text)] font-bold text-sm px-7 py-3.5 rounded-xl transition-all cursor-pointer flex items-center gap-2 group shadow-sm min-h-[48px]"
                 >
                   <span>{lang === 'hi' ? 'ड्राइवर बुक करें' : 'Book a Driver'}</span>
@@ -626,7 +701,7 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
                 </button>
 
                 <button
-                  onClick={() => onLaunchApp('driver-profile-setup', 'driver')}
+                  onClick={() => onLaunchApp('intro', 'driver')}
                   className="bg-[var(--card)] hover:bg-[var(--card-subtle)] text-[var(--text)] font-bold text-sm px-7 py-3.5 rounded-xl border border-[var(--card-border)] transition-all cursor-pointer flex items-center gap-2 hover:border-[var(--primary)] min-h-[48px]"
                 >
                   <UserPlus className="w-4 h-4 text-[var(--primary)]" />

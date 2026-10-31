@@ -45,6 +45,7 @@ export const MechanicProfileSetupView: React.FC<Props> = ({
   const [garageName, setGarageName] = useState('');
   const [state, setState] = useState('Madhya Pradesh');
   const [district, setDistrict] = useState('Balaghat');
+  const [tehsil, setTehsil] = useState('');
   const [cityLandmark, setCityLandmark] = useState('');
   const [workshopAddress, setWorkshopAddress] = useState('');
   const [lat, setLat] = useState<number>(21.8124);
@@ -211,9 +212,10 @@ export const MechanicProfileSetupView: React.FC<Props> = ({
       garageName: garageName.trim(),
       state,
       district,
+      tehsil: tehsil.trim(),
       cityLandmark: cityLandmark.trim(),
-      workshopAddress: workshopAddress.trim() || `${cityLandmark}, ${district}, ${state}`,
-      location: `${district}, ${state}`,
+      workshopAddress: workshopAddress.trim() || `${tehsil.trim() ? tehsil.trim() + ', ' : ''}${cityLandmark}, ${district}, ${state}`,
+      location: `${tehsil.trim() ? tehsil.trim() + ' (तहसील), ' : ''}${district}, ${state}`,
       lat,
       lng,
       serviceRadiusKm,
@@ -478,8 +480,8 @@ export const MechanicProfileSetupView: React.FC<Props> = ({
                 />
               </div>
 
-              {/* State & District */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* State, District & Tehsil */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-1.5 text-left">
                   <label className="text-xs font-black text-white uppercase tracking-wider block">
                     राज्य (State)
@@ -509,7 +511,41 @@ export const MechanicProfileSetupView: React.FC<Props> = ({
                     ))}
                   </select>
                 </div>
+
+                <div className="space-y-1.5 text-left">
+                  <label className="text-xs font-black text-white uppercase tracking-wider block">
+                    तहसील (Tehsil / Block)
+                  </label>
+                  <input
+                    type="text"
+                    value={tehsil}
+                    onChange={(e) => setTehsil(e.target.value)}
+                    placeholder="उदा. वारासिवनी, लालबर्रा"
+                    className="w-full px-3.5 py-3 bg-[#170C22] border border-purple-500/30 focus:border-[#A855F7] rounded-xl text-sm font-bold outline-none text-white placeholder:text-gray-500 transition-all"
+                  />
+                </div>
               </div>
+
+              {/* Suggestions for Tehsil / Hubs */}
+              {ALL_STATES_DATA[state]?.[district] && (
+                <div className="flex flex-wrap gap-1.5 items-center pt-0.5">
+                  <span className="text-[10px] text-gray-400 font-bold">सुझाव तहसील / क्षेत्र:</span>
+                  {ALL_STATES_DATA[state][district].slice(0, 4).map(hub => (
+                    <button
+                      key={hub}
+                      type="button"
+                      onClick={() => setTehsil(hub)}
+                      className={`text-[10px] px-2 py-0.5 rounded-md font-bold transition-all cursor-pointer ${
+                        tehsil === hub
+                          ? 'bg-purple-500 text-black'
+                          : 'bg-purple-500/10 text-purple-300 border border-purple-500/20 hover:bg-purple-500/20'
+                      }`}
+                    >
+                      + {hub}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {/* Highway Landmark & Workshop Address */}
               <div className="space-y-1.5 text-left">

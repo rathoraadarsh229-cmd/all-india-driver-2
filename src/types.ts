@@ -84,6 +84,7 @@ export interface OwnerData {
   fleetSize: string;
   city: string;
   state: string;
+  tehsil?: string;
   village?: string;
   role: 'owner' | 'contractor';
   photoUrl?: string;
@@ -108,6 +109,9 @@ export interface DriverProfile {
   hiringStatus?: 'Available' | 'Contacted' | 'Hired';
   experience: number;
   location: string;
+  state?: string;
+  district?: string;
+  tehsil?: string;
   vehicleCategory: 'Car' | 'Commercial' | 'Heavy Trailer';
   vehicleType: string;
   vehicleFamilyGroup?: VehicleFamilyGroup;
@@ -151,6 +155,7 @@ export interface MechanicProfile {
   garageName: string;
   state?: string;
   district?: string;
+  tehsil?: string;
   cityLandmark?: string;
   workshopAddress?: string;
   location: string;

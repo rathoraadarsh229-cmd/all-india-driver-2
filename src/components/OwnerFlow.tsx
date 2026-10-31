@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { insforge } from '../insforge';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Search, ShieldCheck, Award, Star, MapPin, Truck, Phone, MessageSquare, 
@@ -37,9 +38,14 @@ interface OwnerFlowProps {
   setShowNearbyMechanicModal?: (show: boolean) => void;
   onOpenMechanicChat?: (mech: any) => void;
   authType?: 'gmail' | 'guest';
+  userEmail?: string;
   selectedLanguage?: string;
   setSelectedLanguage?: (lang: string) => void;
   onOpenDonate?: () => void;
+  onOpenAiAssistant?: () => void;
+  onGoToWebsite?: () => void;
+  theme?: 'light' | 'dark';
+  onToggleTheme?: () => void;
 }
 
 // Helper to compute Haversine miles/km distance between coordinates
@@ -78,9 +84,14 @@ export default function OwnerFlow({
   setShowNearbyMechanicModal,
   onOpenMechanicChat,
   authType = 'gmail',
+  userEmail,
   selectedLanguage = 'hi',
   setSelectedLanguage,
-  onOpenDonate
+  onOpenDonate,
+  onOpenAiAssistant,
+  onGoToWebsite,
+  theme,
+  onToggleTheme
 }: OwnerFlowProps) {
   const t = getT(selectedLanguage);
   const [activeTab, setActiveTab] = useState<DashboardTab>('home');
@@ -135,6 +146,7 @@ export default function OwnerFlow({
   // States list representing standard driver states in mock data
   const [selectedState, setSelectedState] = useState<string>(ownerData?.state || 'Madhya Pradesh');
   const [selectedDistrict, setSelectedDistrict] = useState<string>(ownerData?.city || 'Balaghat');
+  const [selectedTehsil, setSelectedTehsil] = useState<string>(ownerData?.tehsil || '');
   const [selectedVillage, setSelectedVillage] = useState<string>('Ward-1 Civil Area');
   const [isOwnerFilterListening, setIsOwnerFilterListening] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(true);
@@ -147,6 +159,7 @@ export default function OwnerFlow({
     if (ownerData) {
       if (ownerData.state) setSelectedState(ownerData.state);
       if (ownerData.city) setSelectedDistrict(ownerData.city);
+      if (ownerData.tehsil) setSelectedTehsil(ownerData.tehsil);
     }
   }, [ownerData]);
   
@@ -431,6 +444,13 @@ export default function OwnerFlow({
       {currentStep === 'owner-dashboard' && (
         <DashboardShell
           appName={t('appName', 'ALL INDIA DRIVER APP')}
+          roleKey="owner"
+          userEmail={userEmail}
+          onOpenSOS={setShowNearbyMechanicModal ? () => setShowNearbyMechanicModal(true) : undefined}
+          onOpenAiAssistant={onOpenAiAssistant}
+          onGoToWebsite={onGoToWebsite}
+          theme={theme}
+          onToggleTheme={onToggleTheme}
           userName={ownerData.name || (authType === 'guest' ? 'गेस्ट गाड़ी मालिक' : 'गाड़ी मालिक')}
           userPhone={ownerData.phone || 'फ़ोन नंबर दर्ज नहीं'}
           userRoleTitle="गाड़ी मालिक"
@@ -443,11 +463,29 @@ export default function OwnerFlow({
           selectedLanguage={selectedLanguage}
           onLanguageChange={setSelectedLanguage}
           onSwitchRoleClick={() => setScreen('role-selection' as any)}
-          onLogoutClick={() => {
+          onLogoutClick={async () => {
+            try {
+              await insforge.auth.signOut();
+            } catch {}
             try {
               localStorage.removeItem('all_india_driver_is_authenticated');
+              localStorage.removeItem('all_india_driver_google_verified');
+              localStorage.removeItem('all_india_driver_auth_type');
+              localStorage.removeItem('all_india_driver_user_email');
+              localStorage.removeItem('all_india_driver_verified_email');
+              localStorage.removeItem('all_india_driver_selected_role');
+              localStorage.removeItem('aid_current_screen');
             } catch {}
-            setScreen('login' as any);
+            setScreen('intro' as any);
+          }}
+          onDeleteAccountClick={async () => {
+            try {
+              await insforge.auth.signOut();
+            } catch {}
+            try {
+              localStorage.clear();
+            } catch {}
+            setScreen('intro' as any);
           }}
           onDonateClick={onOpenDonate}
         >
@@ -1064,8 +1102,8 @@ export default function OwnerFlow({
                   </div>
 
                   <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-3">
-                    {/* Cascading State, District, Village Clean Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    {/* Cascading State, District, Tehsil, Village Clean Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
                       {/* State Filter */}
                       <div className="space-y-1">
                         <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block">
@@ -1096,6 +1134,20 @@ export default function OwnerFlow({
                             <option key={dist} value={dist}>{dist}</option>
                           ))}
                         </select>
+                      </div>
+
+                      {/* Tehsil Filter */}
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block">
+                          तहसील (Tehsil)
+                        </label>
+                        <input
+                          type="text"
+                          value={selectedTehsil}
+                          onChange={(e) => setSelectedTehsil(e.target.value)}
+                          placeholder="उदा. वारासिवनी, लालबर्रा..."
+                          className="w-full bg-slate-50 text-navy font-bold text-xs p-2.5 rounded-xl border border-slate-200 outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange text-left"
+                        />
                       </div>
 
                       {/* Village Filter with Mic */}
