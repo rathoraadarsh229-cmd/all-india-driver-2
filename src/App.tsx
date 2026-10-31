@@ -18,26 +18,8 @@ import {
   UserAuthType 
 } from './types';
 import { fetchDriversFromInsForge } from './services/insforgeService';
-import { 
-  ShieldCheck, 
-  ArrowLeft, 
-  AlertTriangle, 
-  Truck, 
-  Calculator, 
-  Search, 
-  UserCheck, 
-  Wrench, 
-  Building2,
-  Menu,
-  X,
-  Sparkles,
-  Sun,
-  Moon
-} from 'lucide-react';
 
 export default function App() {
-  // App navigation bar mobile drawer toggle
-  const [appNavMenuOpen, setAppNavMenuOpen] = useState(false);
   // Master View Mode: 'app' (Default: Interactive Portal) or 'website' (Marketing Site)
   const [viewMode, setViewMode] = useState<'website' | 'app'>(() => {
     if (typeof window !== 'undefined') {
@@ -55,8 +37,22 @@ export default function App() {
   const [currentScreen, setCurrentScreen] = useState<AppScreen>(() => {
     try {
       const isAuth = localStorage.getItem('all_india_driver_is_authenticated') === 'true';
+      const savedAuthType = localStorage.getItem('all_india_driver_auth_type');
+      const hasVerifiedGoogleSession = localStorage.getItem('all_india_driver_google_verified') === 'true';
+
+      // Older builds marked any typed Gmail address as authenticated. Expire those
+      // unverified local-only sessions so they cannot bypass the real Google flow.
+      if (isAuth && savedAuthType === 'gmail' && !hasVerifiedGoogleSession) {
+        localStorage.removeItem('all_india_driver_is_authenticated');
+        localStorage.removeItem('all_india_driver_auth_type');
+        localStorage.removeItem('all_india_driver_user_email');
+        localStorage.removeItem('all_india_driver_verified_email');
+        localStorage.removeItem('aid_current_screen');
+      }
+
+      const hasValidLocalSession = isAuth && (savedAuthType !== 'gmail' || hasVerifiedGoogleSession);
       const saved = localStorage.getItem('aid_current_screen') as AppScreen;
-      if (isAuth && saved && ['driver-dashboard', 'owner-dashboard', 'mechanic-dashboard'].includes(saved)) {
+      if (hasValidLocalSession && saved && ['driver-dashboard', 'owner-dashboard', 'mechanic-dashboard'].includes(saved)) {
         return saved;
       }
     } catch {}
@@ -326,237 +322,7 @@ export default function App() {
   // Render Realtime App Portal
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col font-sans selection:bg-[var(--primary)] selection:text-[var(--primary-text)] transition-colors duration-200">
-      {/* Top Banner: Connected Navigation Bar Across App & Website */}
-      {!['splash', 'intro', 'login', 'role-selection'].includes(currentScreen) && (
-      <header className="sticky top-0 z-50 bg-[var(--card)]/95 backdrop-blur-md border-b border-[var(--card-border)] px-4 sm:px-6 py-2.5 text-xs transition-colors duration-200">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
-          
-          {/* Left: Brand / Home Link */}
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => {
-                setViewMode('website');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className="flex items-center gap-2 text-[var(--text)] hover:text-[var(--primary)] font-bold tracking-wider transition-colors group cursor-pointer"
-            >
-              <div className="w-8 h-8 rounded-lg bg-[var(--primary)] flex items-center justify-center text-[var(--primary-text)] shadow-sm">
-                <Truck className="w-4 h-4" />
-              </div>
-              <span className="font-display font-bold text-sm tracking-tight">ALL INDIA DRIVER</span>
-            </button>
-
-            <span className="hidden lg:inline text-[var(--muted)] opacity-40">|</span>
-
-            {/* Quick Links to Website Sections */}
-            <nav className="hidden lg:flex items-center gap-4 text-[12px] font-medium text-[var(--muted)]">
-              <button
-                onClick={() => {
-                  setViewMode('website');
-                  setTimeout(() => {
-                    document.getElementById('overview')?.scrollIntoView({ behavior: 'smooth' });
-                  }, 100);
-                }}
-                className="hover:text-[var(--text)] transition-colors cursor-pointer"
-              >
-                🏠 होम (Home)
-              </button>
-              <button
-                onClick={() => {
-                  setViewMode('website');
-                  setTimeout(() => {
-                    document.getElementById('vehicles')?.scrollIntoView({ behavior: 'smooth' });
-                  }, 100);
-                }}
-                className="hover:text-[var(--text)] transition-colors cursor-pointer"
-              >
-                🚛 वाहन बेड़ा (Fleet)
-              </button>
-              <button
-                onClick={() => {
-                  setViewMode('website');
-                  setTimeout(() => {
-                    document.getElementById('calculator')?.scrollIntoView({ behavior: 'smooth' });
-                  }, 100);
-                }}
-                className="hover:text-[var(--text)] transition-colors cursor-pointer"
-              >
-                🧮 किराया कैलकुलेटर
-              </button>
-            </nav>
-          </div>
-
-          {/* Center/Right: Role Switchers, AI, SOS & Theme Toggle */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            
-            {/* Direct Role Portal Pills */}
-            <div className="hidden sm:flex items-center bg-[var(--card-subtle)] border border-[var(--card-border)] rounded-xl p-1 gap-1">
-              <button
-                onClick={() => handleLaunchApp('driver-dashboard', 'driver')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  userRole === 'driver' && currentScreen === 'driver-dashboard'
-                    ? 'bg-[var(--primary)] text-[var(--primary-text)] shadow-sm font-bold'
-                    : 'text-[var(--muted)] hover:text-[var(--text)]'
-                }`}
-              >
-                🧑‍✈️ चालक
-              </button>
-
-              <button
-                onClick={() => handleLaunchApp('owner-dashboard', 'owner')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  userRole === 'owner' && currentScreen === 'owner-dashboard'
-                    ? 'bg-[var(--primary)] text-[var(--primary-text)] shadow-sm font-bold'
-                    : 'text-[var(--muted)] hover:text-[var(--text)]'
-                }`}
-              >
-                🏢 मालिक
-              </button>
-
-              <button
-                onClick={() => handleLaunchApp('mechanic-dashboard', 'mechanic')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  userRole === 'mechanic' && currentScreen === 'mechanic-dashboard'
-                    ? 'bg-[var(--primary)] text-[var(--primary-text)] shadow-sm font-bold'
-                    : 'text-[var(--muted)] hover:text-[var(--text)]'
-                }`}
-              >
-                🔧 मैकेनिक
-              </button>
-            </div>
-
-            {/* 24x7 AI Chat Assistant (100% Free - ₹0 Charge) */}
-            <button
-              onClick={() => setShowAiChatModal(true)}
-              className="flex items-center gap-1.5 bg-[var(--card-subtle)] hover:border-[var(--primary)] text-[var(--text)] border border-[var(--card-border)] px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer min-h-[38px]"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-[var(--primary)]" />
-              <span className="hidden sm:inline font-bold">24x7 AI सारथी</span>
-              <span className="sm:hidden font-bold">AI</span>
-            </button>
-
-            {/* 24x7 SOS Action (Danger Red reserved for emergency) */}
-            <button
-              onClick={() => setShowNearbyMechanicModal(true)}
-              className="flex items-center gap-1.5 bg-[var(--danger)] hover:bg-[#b91c1c] text-white px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-md shadow-red-500/25 transition-all cursor-pointer min-h-[38px]"
-            >
-              <AlertTriangle className="w-3.5 h-3.5 text-white animate-pulse" />
-              <span>24x7 SOS</span>
-            </button>
-
-            {/* Light / Dark Mode Toggle */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-xl bg-[var(--card-subtle)] text-[var(--text)] hover:text-[var(--primary)] border border-[var(--card-border)] transition-all cursor-pointer flex items-center justify-center min-h-[38px] min-w-[38px]"
-              title={theme === 'dark' ? 'Light mode (दिन का मोड)' : 'Dark mode (रात का मोड)'}
-              aria-label="Toggle Theme"
-            >
-              {theme === 'dark' ? (
-                <Sun className="w-4 h-4 text-amber-400" />
-              ) : (
-                <Moon className="w-4 h-4 text-slate-700" />
-              )}
-            </button>
-
-            {/* Mobile Nav Hamburger */}
-            <button
-              onClick={() => setAppNavMenuOpen(!appNavMenuOpen)}
-              className="lg:hidden p-2 text-[var(--text)] rounded-xl bg-[var(--card-subtle)] border border-[var(--card-border)] min-h-[38px] min-w-[38px] flex items-center justify-center"
-              aria-label="Toggle Navigation"
-            >
-              {appNavMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Navigation Drawer inside App Mode */}
-        {appNavMenuOpen && (
-          <div className="lg:hidden mt-2 pt-2 border-t border-[var(--card-border)] space-y-1.5 pb-2">
-            <button
-              onClick={() => {
-                setAppNavMenuOpen(false);
-                setViewMode('website');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-[var(--text)] hover:bg-[var(--card-subtle)]"
-            >
-              🏠 वेबसाइट होम (Back to Website Home)
-            </button>
-            <button
-              onClick={() => {
-                setAppNavMenuOpen(false);
-                setViewMode('website');
-                setTimeout(() => {
-                  document.getElementById('vehicles')?.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-              }}
-              className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-[var(--text)] hover:bg-[var(--card-subtle)]"
-            >
-              🚛 वाहन बेड़ा (Fleet 2W to 40W+)
-            </button>
-            <button
-              onClick={() => {
-                setAppNavMenuOpen(false);
-                setViewMode('website');
-                setTimeout(() => {
-                  document.getElementById('calculator')?.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-              }}
-              className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-[var(--text)] hover:bg-[var(--card-subtle)]"
-            >
-              🧮 किराया कैलकुलेटर (Fare & Bata)
-            </button>
-            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[var(--card-border)]">
-              <button
-                onClick={() => {
-                  setAppNavMenuOpen(false);
-                  handleLaunchApp('driver-dashboard', 'driver');
-                }}
-                className={`py-2 text-center text-xs rounded-lg border border-[var(--card-border)] ${
-                  userRole === 'driver' ? 'bg-[var(--primary)] text-[var(--primary-text)] font-bold' : 'bg-[var(--card-subtle)] text-[var(--text)] font-medium'
-                }`}
-              >
-                🧑‍✈️ चालक
-              </button>
-              <button
-                onClick={() => {
-                  setAppNavMenuOpen(false);
-                  handleLaunchApp('owner-dashboard', 'owner');
-                }}
-                className={`py-2 text-center text-xs rounded-lg border border-[var(--card-border)] ${
-                  userRole === 'owner' ? 'bg-[var(--primary)] text-[var(--primary-text)] font-bold' : 'bg-[var(--card-subtle)] text-[var(--text)] font-medium'
-                }`}
-              >
-                🏢 मालिक
-              </button>
-              <button
-                onClick={() => {
-                  setAppNavMenuOpen(false);
-                  handleLaunchApp('mechanic-dashboard', 'mechanic');
-                }}
-                className={`py-2 text-center text-xs rounded-lg border border-[var(--card-border)] ${
-                  userRole === 'mechanic' ? 'bg-[var(--primary)] text-[var(--primary-text)] font-bold' : 'bg-[var(--card-subtle)] text-[var(--text)] font-medium'
-                }`}
-              >
-                🔧 मैकेनिक
-              </button>
-            </div>
-            {/* Theme switch in mobile menu */}
-            <div className="pt-2 border-t border-[var(--card-border)] flex items-center justify-between px-2">
-              <span className="text-xs text-[var(--muted)] font-medium">थीम बदलें (Theme)</span>
-              <button
-                onClick={toggleTheme}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--card-subtle)] border border-[var(--card-border)] text-xs text-[var(--text)] font-medium"
-              >
-                {theme === 'dark' ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-slate-700" />}
-                <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
-              </button>
-            </div>
-          </div>
-        )}
-      </header>
-      )}
-
+      {/* Each flow owns its own navigation; avoid a second global menu above it. */}
       {/* Main Interactive App Workspaces */}
       <main className="flex-1">
         {/* 1. Onboarding & Registration Screens */}
@@ -607,6 +373,10 @@ export default function App() {
             selectedLanguage={selectedLanguage}
             setSelectedLanguage={handleSetLanguage}
             onOpenDonate={() => setCurrentScreen('donate-money')}
+            onOpenAiAssistant={() => setShowAiChatModal(true)}
+            onGoToWebsite={() => { setViewMode('website'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            theme={theme}
+            onToggleTheme={toggleTheme}
           />
         )}
 
@@ -636,6 +406,10 @@ export default function App() {
             selectedLanguage={selectedLanguage}
             setSelectedLanguage={handleSetLanguage}
             onOpenDonate={() => setCurrentScreen('donate-money')}
+            onOpenAiAssistant={() => setShowAiChatModal(true)}
+            onGoToWebsite={() => { setViewMode('website'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            theme={theme}
+            onToggleTheme={toggleTheme}
           />
         )}
 
@@ -653,6 +427,10 @@ export default function App() {
             setSelectedLanguage={handleSetLanguage}
             authType={authType}
             onOpenDonate={() => setCurrentScreen('donate-money')}
+            onOpenAiAssistant={() => setShowAiChatModal(true)}
+            onGoToWebsite={() => { setViewMode('website'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            theme={theme}
+            onToggleTheme={toggleTheme}
           />
         )}
 
