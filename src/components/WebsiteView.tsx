@@ -674,174 +674,70 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
       {/* ============================================================================== */}
       {/* 3. CINEMATIC HERO STAGE                                                       */}
       {/* ============================================================================== */}
-      <section id="overview" className="relative pt-12 pb-20 px-4 sm:px-8 overflow-hidden bg-[var(--bg)] transition-colors duration-200">
-        <div className="max-w-7xl mx-auto relative z-10">
+      <section id="overview" className="relative pt-8 pb-16 px-4 sm:px-8 overflow-hidden bg-[var(--bg)] transition-colors duration-200">
+        <div className="max-w-7xl mx-auto relative z-10 space-y-8">
           
-          {/* Top Tagline Label */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--card)] border border-[var(--card-border)] text-xs font-semibold tracking-wider text-[var(--primary)] uppercase mb-6 shadow-xs">
-            <span className="w-2 h-2 rounded-full bg-[var(--primary)] animate-ping"></span>
-            <span>CHALLENGING THE NORMS OF HIGHWAY LOGISTICS</span>
+          {/* Hero Banner (Full Width, Uncropped) */}
+          <div className="relative rounded-3xl overflow-hidden border border-white/15 bg-[#121214] shadow-2xl">
+            <img 
+              src="/branding/hero-banner.jpg" 
+              alt="ALL INDIA DRIVER - 0% Commission Direct Driver & Highway Network" 
+              className="w-full h-auto object-cover object-center"
+            />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            
-            {/* Left Column: Heading, Subhead, and CTAs */}
-            <div className="lg:col-span-7 space-y-6">
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold uppercase tracking-tight text-[var(--text)] leading-[1.08] font-display">
-                0% कमीशन <br />
-                <span className="text-[var(--primary)]">
-                  भारत का सबसे भरोसेमंद
-                </span> <br />
-                चालक व हाईवे नेटवर्क
-              </h1>
+          {/* Action Buttons & Verified Badges (Centered) */}
+          <div className="flex flex-col items-center justify-center gap-5 text-center">
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <button
+                onClick={() => onLaunchApp('intro', 'owner')}
+                className="bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-[var(--primary-text)] font-bold text-sm px-8 py-4 rounded-xl transition-all cursor-pointer flex items-center gap-2 group shadow-lg min-h-[48px]"
+              >
+                <span>{lang === 'hi' ? 'ड्राइवर बुक करें' : 'Book a Driver'}</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
 
-              <p className="text-[var(--muted)] text-sm sm:text-base leading-relaxed max-w-xl font-normal">
-                {lang === 'hi' 
-                  ? 'बिना किसी दलाल या बिचौलिये के वाहन मालिक, भारी वाहन चालक और 24x7 ऑन-रोड मैकेनिक सीधे जुड़ें। 100% डायरेक्ट पेमेंट सीधे यूपीआई या नकद।'
-                  : 'India\'s automotive-grade digital highway network connecting commercial fleet owners directly with heavy trailer drivers and 24x7 breakdown mechanics with 0% brokerage.'}
-              </p>
-
-              {/* CTAs: [ड्राइवर बुक करें] and [ड्राइवर के रूप में जुड़ें] */}
-              <div className="flex flex-wrap items-center gap-4 pt-2">
-                <button
-                  onClick={() => onLaunchApp('intro', 'owner')}
-                  className="bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-[var(--primary-text)] font-bold text-sm px-7 py-3.5 rounded-xl transition-all cursor-pointer flex items-center gap-2 group shadow-sm min-h-[48px]"
-                >
-                  <span>{lang === 'hi' ? 'ड्राइवर बुक करें' : 'Book a Driver'}</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </button>
-
-                <button
-                  onClick={() => onLaunchApp('intro', 'driver')}
-                  className="bg-[var(--card)] hover:bg-[var(--card-subtle)] text-[var(--text)] font-bold text-sm px-7 py-3.5 rounded-xl border border-[var(--card-border)] transition-all cursor-pointer flex items-center gap-2 hover:border-[var(--primary)] min-h-[48px]"
-                >
-                  <UserPlus className="w-4 h-4 text-[var(--primary)]" />
-                  <span>{lang === 'hi' ? 'ड्राइवर के रूप में जुड़ें' : 'Join as Driver'}</span>
-                </button>
-              </div>
-
-              {/* Trust Indicators */}
-              <div className="pt-4 flex flex-wrap items-center gap-4 text-xs font-bold text-gray-400">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]"></span>
-                  <span className="text-white">🟢 Email verified</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#0087FF]"></span>
-                  <span className="text-white">🔵 Phone verified</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-[#10B981]" />
-                  <span className="text-white">100% डायरेक्ट पेमेंट</span>
-                </div>
-              </div>
+              <button
+                onClick={() => onLaunchApp('intro', 'driver')}
+                className="bg-[var(--card)] hover:bg-[var(--card-subtle)] text-[var(--text)] font-bold text-sm px-8 py-4 rounded-xl border border-[var(--card-border)] transition-all cursor-pointer flex items-center gap-2 hover:border-[var(--primary)] min-h-[48px]"
+              >
+                <UserPlus className="w-4 h-4 text-[var(--primary)]" />
+                <span>{lang === 'hi' ? 'ड्राइवर के रूप में जुड़ें' : 'Join as Driver'}</span>
+              </button>
             </div>
 
-            {/* Right Column: High-Impact Visual Card */}
-            <div className="lg:col-span-5 relative">
-              <div className="relative rounded-3xl overflow-hidden border border-white/15 bg-[#121214] shadow-2xl group">
-                <img 
-                  src="/branding/hero-banner.jpg" 
-                  alt="ALL INDIA DRIVER - 0% Commission Direct Driver & Highway Network" 
-                  className="w-full h-80 sm:h-96 object-cover object-center group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0C] via-transparent to-transparent"></div>
-
-                {/* Floating Official Logo Badge */}
-                <div className="absolute top-4 left-4 flex items-center gap-2.5 bg-black/85 backdrop-blur-md px-3.5 py-1.5 rounded-2xl border border-white/20 shadow-xl">
-                  <img src="/branding/logo.jpg" alt="Logo" className="w-7 h-7 rounded-lg object-contain bg-[#16161A] p-0.5 border border-[#FFC400]/40" />
-                  <div>
-                    <span className="text-xs font-black text-white tracking-wide block leading-tight">ALL INDIA DRIVER</span>
-                    <span className="text-[9px] text-[#FFC400] font-black uppercase tracking-wider block">Drive Safe • Grow Together</span>
-                  </div>
-                </div>
-
-                {/* Floating HUD Badge */}
-                <div className="absolute bottom-4 left-4 right-4 bg-[#121214]/95 backdrop-blur-md border border-white/10 p-4 rounded-2xl">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-[10px] text-[#E10600] font-black uppercase tracking-wider block">
-                        HIGHWAY DISPATCH
-                      </span>
-                      <h4 className="text-sm font-black text-white uppercase">
-                        2W से 40W+ भारी वाहन नेटवर्क
-                      </h4>
-                    </div>
-                    <span className="bg-[#E10600]/20 text-[#E10600] font-black text-xs px-2.5 py-1 rounded-full border border-[#E10600]/40">
-                      LIVE RADAR
-                    </span>
-                  </div>
-                </div>
+            {/* Trust Indicators */}
+            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs font-bold text-gray-400">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]"></span>
+                <span className="text-white">🟢 Email verified</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#0087FF]"></span>
+                <span className="text-white">🔵 Phone verified</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-[#10B981]" />
+                <span className="text-white">100% डायरेक्ट पेमेंट</span>
               </div>
             </div>
           </div>
 
-          {/* High-Contrast Automotive Stats Ticker */}
-          <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-[#121214] border border-white/10 rounded-2xl p-5 text-center hover:border-[#E10600]/40 transition-colors">
-              <Radio className="w-5 h-5 text-[#E10600] mx-auto mb-2" />
-              <div className="text-2xl font-black text-white font-display">5 KM</div>
-              <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">
-                लाइव रडार मैचिंग
-              </div>
-            </div>
-
-            <div className="bg-[#121214] border border-white/10 rounded-2xl p-5 text-center hover:border-[#E10600]/40 transition-colors">
-              <Truck className="w-5 h-5 text-[#E10600] mx-auto mb-2" />
-              <div className="text-2xl font-black text-white font-display">2W - 40W+</div>
-              <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">
-                भारी वाहन बेड़ा
-              </div>
-            </div>
-
-            <div className="bg-[#121214] border border-white/10 rounded-2xl p-5 text-center hover:border-[#E10600]/40 transition-colors">
-              <Wrench className="w-5 h-5 text-[#E10600] mx-auto mb-2" />
-              <div className="text-2xl font-black text-white font-display">24x7</div>
-              <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">
-                हाईवे ब्रेकडाउन SOS
-              </div>
-            </div>
-
-            <div className="bg-[#121214] border border-white/10 rounded-2xl p-5 text-center hover:border-[#10B981]/40 transition-colors">
-              <ShieldCheck className="w-5 h-5 text-[#10B981] mx-auto mb-2" />
-              <div className="text-2xl font-black text-white font-display">₹0</div>
-              <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">
-                प्लेटफॉर्म कमीशन (0%)
-              </div>
-            </div>
-          </div>
-
-          {/* Full-Fleet Branded Banner */}
-          <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#121214] shadow-2xl group">
+          {/* Full-Fleet Branded Banner (roles-collage.jpg without overlay text, only button in corner) */}
+          <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#121214] shadow-2xl">
             <img
               src="/branding/roles-collage.jpg"
               alt="ALL INDIA DRIVER Commercial Fleet Network"
-              className="w-full max-h-[460px] object-cover object-center group-hover:scale-[1.02] transition-transform duration-700"
+              className="w-full h-auto object-cover object-center"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent flex flex-col justify-end p-6 sm:p-10">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="space-y-1.5 max-w-2xl">
-                  <div className="flex items-center gap-2">
-                    <img src="/branding/logo.jpg" alt="Logo" className="w-8 h-8 rounded-lg object-contain bg-black/60 p-0.5 border border-[#FFC400]/40 shadow-sm" />
-                    <span className="text-xs font-black uppercase tracking-wider text-[#FFC400]">
-                      ALL INDIA DRIVER FLEET NETWORK
-                    </span>
-                  </div>
-                  <h3 className="text-xl sm:text-2xl font-black text-white uppercase font-display leading-tight">
-                    भारत का सबसे भरोसेमंद 0% ब्रोकरेज चालक, वाहन मालिक व मैकेनिक नेटवर्क
-                  </h3>
-                  <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
-                    2W डिलीवरी से लेकर 40W+ भारी ट्रेलर्स तक — बिना किसी दलाल के सीधे जुड़े, सुरक्षित यात्रा करें और एक साथ आगे बढ़ें।
-                  </p>
-                </div>
-                <button
-                  onClick={() => onLaunchApp('intro', 'owner')}
-                  className="bg-[#FFC400] hover:bg-amber-400 text-gray-950 font-black text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl shadow-lg transition-all cursor-pointer flex items-center gap-2 shrink-0"
-                >
-                  <span>वाहन रजिस्टर करें / Hire Driver</span>
-                  <ArrowRight className="w-4 h-4 text-gray-950" />
-                </button>
-              </div>
+            <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6">
+              <button
+                onClick={() => onLaunchApp('intro', 'owner')}
+                className="bg-[#FFC400] hover:bg-amber-400 text-gray-950 font-black text-xs sm:text-sm uppercase tracking-wider px-6 py-3.5 rounded-xl shadow-2xl transition-all cursor-pointer flex items-center gap-2"
+              >
+                <span>वाहन रजिस्टर करें / Hire Driver</span>
+                <ArrowRight className="w-4 h-4 text-gray-950" />
+              </button>
             </div>
           </div>
         </div>
@@ -996,18 +892,13 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
       <section id="calculator" className="py-20 px-4 sm:px-8 bg-[#121214] border-t border-white/10">
         <div className="max-w-7xl mx-auto space-y-12">
           
-          <div className="text-center space-y-3 max-w-2xl mx-auto">
-            <span className="text-xs font-black uppercase tracking-widest text-[#E10600] bg-[#0B0B0C] px-3.5 py-1.5 rounded-full border border-white/10">
-              TRANSPARENT FARE & BATA ESTIMATOR
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black uppercase text-white font-display">
-              चालक दूरी भत्ता एवं दैनिक बाटा कैलकुलेटर
-            </h2>
-            <p className="text-gray-400 text-sm">
-              {lang === 'hi'
-                ? 'ओपनस्ट्रीटमैप OSRM द्वारा वास्तविक हाईवे सड़क दूरी की गणना। केवल ड्राइवर दूरी भत्ता और दैनिक भोजन बाटा - 0% प्लेटफॉर्म कटौती!'
-                : 'Real road distance via OpenStreetMap OSRM. Focuses purely on Driver Distance Allowance and Daily Bata with 0% platform deduction.'}
-            </p>
+          {/* Branded Fare Calculator Visual Banner */}
+          <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#0B0B0C] shadow-2xl">
+            <img 
+              src="/branding/calculator-banner.jpg" 
+              alt="ALL INDIA DRIVER Fare & Bhatta Calculator" 
+              className="w-full h-auto object-cover object-center" 
+            />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -1199,22 +1090,6 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
               </button>
             </div>
           </div>
-
-          {/* Branded Fare Calculator Visual Banner */}
-          <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#0B0B0C] shadow-2xl group">
-            <img 
-              src="/branding/calculator-banner.jpg" 
-              alt="ALL INDIA DRIVER Fare & Bhatta Calculator" 
-              className="w-full max-h-[460px] object-cover object-center group-hover:scale-[1.01] transition-transform duration-700" 
-            />
-            <div className="absolute top-4 left-4 flex items-center gap-2.5 bg-black/85 backdrop-blur-md px-3.5 py-1.5 rounded-2xl border border-white/20 shadow-xl">
-              <img src="/branding/logo.jpg" alt="Logo" className="w-7 h-7 rounded-lg object-contain bg-[#16161A] p-0.5 border border-[#FFC400]/40" />
-              <div>
-                <span className="text-xs font-black text-white tracking-wide block leading-tight">ALL INDIA DRIVER CALCULATOR</span>
-                <span className="text-[9px] text-[#FFC400] font-black uppercase tracking-wider block">सटीक दूरी भत्ता • 0% कमीशन</span>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -1224,18 +1099,31 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
       <section id="sos" className="py-20 px-4 sm:px-8 bg-[#0B0B0C] border-t border-white/10">
         <div className="max-w-7xl mx-auto space-y-12">
           
-          <div className="text-center space-y-3 max-w-2xl mx-auto">
-            <span className="text-xs font-black uppercase tracking-widest text-[#E10600] bg-[#121214] px-3.5 py-1.5 rounded-full border border-white/10">
-              HIGHWAY EMERGENCY BREAKDOWN
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black uppercase text-white font-display">
-              24x7 ऑन-रोड हाईवे मैकेनिक सहायता
-            </h2>
-            <p className="text-gray-400 text-sm">
-              {lang === 'hi'
-                ? 'हाईवे पर पंचर, इंजन हीटिंग या ब्रेकडाउन होने पर 1-टैप में निकटतम ऑन-साइट मैकेनिक से जुड़ें।'
-                : '1-tap emergency dispatch connecting commercial drivers with roadside highway mechanics nationwide.'}
-            </p>
+          {/* 24x7 Highway Emergency Infographic Visual Banners */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#121214] shadow-2xl">
+              <img 
+                src="/branding/sos-emergency-banner.jpg" 
+                alt="24x7 Highway SOS Emergency Assistance" 
+                className="w-full h-auto object-cover object-center" 
+              />
+            </div>
+
+            <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#121214] shadow-2xl">
+              <img 
+                src="/branding/mechanic-support-banner.jpg" 
+                alt="On-Road Highway Mechanic Assistance" 
+                className="w-full h-auto object-cover object-center" 
+              />
+            </div>
+
+            <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#121214] shadow-2xl">
+              <img 
+                src="/branding/sos-roadside-banner.jpg" 
+                alt="On-Road Emergency Assistance Anywhere" 
+                className="w-full h-auto object-cover object-center" 
+              />
+            </div>
           </div>
 
           {/* 6 Quick Breakdown Chips */}
@@ -1276,45 +1164,6 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
               <span>SOS मैकेनिक खोजें</span>
             </button>
           </div>
-
-          {/* 24x7 Highway Emergency Infographic Visual Banners */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-            <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#121214] shadow-2xl group">
-              <img 
-                src="/branding/sos-emergency-banner.jpg" 
-                alt="24x7 Highway SOS Emergency Assistance" 
-                className="w-full h-64 sm:h-72 object-cover object-center group-hover:scale-[1.02] transition-transform duration-700" 
-              />
-              <div className="absolute top-4 left-4 flex items-center gap-2 bg-black/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/20 shadow-md">
-                <img src="/branding/logo.jpg" alt="Logo" className="w-5 h-5 rounded-md object-contain bg-[#16161A] p-0.5 border border-[#FFC400]/40" />
-                <span className="text-[11px] font-black text-white">24x7 HIGHWAY SOS</span>
-              </div>
-            </div>
-
-            <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#121214] shadow-2xl group">
-              <img 
-                src="/branding/mechanic-support-banner.jpg" 
-                alt="On-Road Highway Mechanic Assistance" 
-                className="w-full h-64 sm:h-72 object-cover object-center group-hover:scale-[1.02] transition-transform duration-700" 
-              />
-              <div className="absolute top-4 left-4 flex items-center gap-2 bg-black/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/20 shadow-md">
-                <img src="/branding/logo.jpg" alt="Logo" className="w-5 h-5 rounded-md object-contain bg-[#16161A] p-0.5 border border-[#FFC400]/40" />
-                <span className="text-[11px] font-black text-white">MECHANIC SUPPORT</span>
-              </div>
-            </div>
-
-            <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#121214] shadow-2xl group">
-              <img 
-                src="/branding/sos-roadside-banner.jpg" 
-                alt="On-Road Emergency Assistance Anywhere" 
-                className="w-full h-64 sm:h-72 object-cover object-center group-hover:scale-[1.02] transition-transform duration-700" 
-              />
-              <div className="absolute top-4 left-4 flex items-center gap-2 bg-black/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/20 shadow-md">
-                <img src="/branding/logo.jpg" alt="Logo" className="w-5 h-5 rounded-md object-contain bg-[#16161A] p-0.5 border border-[#FFC400]/40" />
-                <span className="text-[11px] font-black text-white">ROADSIDE ASSISTANCE</span>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -1324,18 +1173,13 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
       <section id="roles" className="py-20 px-4 sm:px-8 bg-[#121214] border-t border-white/10">
         <div className="max-w-7xl mx-auto space-y-12">
           
-          <div className="text-center space-y-3 max-w-2xl mx-auto">
-            <span className="text-xs font-black uppercase tracking-widest text-[#E10600] bg-[#0B0B0C] px-3.5 py-1.5 rounded-full border border-white/10">
-              3 UNIVERSES ROLE SELECTION
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black uppercase text-white font-display">
-              अपनी भूमिका चुनें
-            </h2>
-            <p className="text-gray-400 text-sm">
-              {lang === 'hi'
-                ? 'आप इस मंच पर किस रूप में जुड़ना चाहते हैं? अपनी श्रेणी चुनें और तुरंत शुरुआत करें।'
-                : 'Select your role to access customized dashboards, real-time dispatch, and 0% commission operations.'}
-            </p>
+          {/* Branded Roles & How It Works Banner */}
+          <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#0B0B0C] shadow-2xl">
+            <img 
+              src="/branding/roles-banner.jpg" 
+              alt="ALL INDIA DRIVER Roles and How It Works" 
+              className="w-full h-auto object-cover object-center" 
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1421,22 +1265,6 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
               </button>
             </div>
           </div>
-
-          {/* Branded Roles & How It Works Banner */}
-          <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#0B0B0C] shadow-2xl group">
-            <img 
-              src="/branding/roles-banner.jpg" 
-              alt="ALL INDIA DRIVER Roles and How It Works" 
-              className="w-full max-h-[460px] object-cover object-center group-hover:scale-[1.01] transition-transform duration-700" 
-            />
-            <div className="absolute top-4 left-4 flex items-center gap-2.5 bg-black/85 backdrop-blur-md px-3.5 py-1.5 rounded-2xl border border-white/20 shadow-md">
-              <img src="/branding/logo.jpg" alt="Logo" className="w-7 h-7 rounded-lg object-contain bg-[#16161A] p-0.5 border border-[#FFC400]/40" />
-              <div>
-                <span className="text-xs font-black text-white tracking-wide block leading-tight">ALL INDIA DRIVER NETWORK</span>
-                <span className="text-[9px] text-[#FFC400] font-black uppercase tracking-wider block">Driver • Owner • Mechanic</span>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -1444,87 +1272,14 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
       {/* 8. KEY FEATURES                                                                */}
       {/* ============================================================================== */}
       <section id="features" className="py-20 px-4 sm:px-8 bg-[#0B0B0C] border-t border-white/10">
-        <div className="max-w-7xl mx-auto space-y-12">
-          
-          <div className="text-center space-y-3 max-w-2xl mx-auto">
-            <span className="text-xs font-black uppercase tracking-widest text-[#E10600] bg-[#121214] px-3.5 py-1.5 rounded-full border border-white/10">
-              CORE ARCHITECTURE
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black uppercase text-white font-display">
-              ऑल इंडिया ड्राइवर की मुख्य विशेषताएं
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-[#121214] border border-white/10 rounded-2xl p-6 space-y-3 hover:border-[#E10600]/40 transition-colors">
-              <div className="w-10 h-10 rounded-xl bg-[#E10600]/10 flex items-center justify-center text-[#E10600]">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <h4 className="text-base font-black text-white uppercase">0% कमीशन</h4>
-              <p className="text-xs text-gray-400 leading-relaxed">
-                ट्रांसपोर्ट उद्योग में दलाली खत्म। गाड़ी मालिक और ड्राइवर के बीच 100% सीधा लेनदेन।
-              </p>
-            </div>
-
-            {/* Feature 2: 24x7 Chat AI (100% Free, Zero Charge) */}
-            <div 
-              onClick={() => setIsAiChatOpen(true)}
-              className="bg-[#121214] border border-[#E10600]/40 hover:border-[#E10600] rounded-2xl p-6 space-y-3 transition-all cursor-pointer group shadow-lg shadow-[#E10600]/10 hover:scale-[1.02]"
-            >
-              <div className="w-10 h-10 rounded-xl bg-[#E10600]/15 flex items-center justify-center text-[#E10600] group-hover:scale-110 transition-transform">
-                <Sparkles className="w-5 h-5 text-[#E10600]" />
-              </div>
-              <div className="flex items-center justify-between">
-                <h4 className="text-base font-black text-white uppercase group-hover:text-[#E10600] transition-colors">
-                  24x7 AI चैट सारथी
-                </h4>
-                <span className="text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded-full font-black uppercase">
-                  100% Free
-                </span>
-              </div>
-              <p className="text-xs text-gray-400 leading-relaxed">
-                हाईवे ब्रेकडाउन, किराया-बाटा, ड्राइवर भर्ती और आपकी हर समस्या का त्वरित समाधान। ₹0 चार्ज, 100% मुफ़्त सेवा।
-              </p>
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#E10600] group-hover:underline">
-                AI से अभी बात करें ➔
-              </span>
-            </div>
-
-            <div className="bg-[#121214] border border-white/10 rounded-2xl p-6 space-y-3 hover:border-[#E10600]/40 transition-colors">
-              <div className="w-10 h-10 rounded-xl bg-[#E10600]/10 flex items-center justify-center text-[#E10600]">
-                <Radio className="w-5 h-5" />
-              </div>
-              <h4 className="text-base font-black text-white uppercase">5 KM लाइव रडार</h4>
-              <p className="text-xs text-gray-400 leading-relaxed">
-                सटीक जीपीएस प्रोक्सिमिटी एल्गोरिदम निकटतम उपलब्ध वाहन चालकों को तुरंत मैप पर दिखाता है।
-              </p>
-            </div>
-
-            <div className="bg-[#121214] border border-white/10 rounded-2xl p-6 space-y-3 hover:border-[#E10600]/40 transition-colors">
-              <div className="w-10 h-10 rounded-xl bg-[#E10600]/10 flex items-center justify-center text-[#E10600]">
-                <Clock className="w-5 h-5" />
-              </div>
-              <h4 className="text-base font-black text-white uppercase">24x7 हाईवे रोडसाइड सहायता</h4>
-              <p className="text-xs text-gray-400 leading-relaxed">
-                24 घंटे 365 दिन ऑन-रोड मैकेनिक, टायर पंचर, क्रेन व टोइंग इमरजेंसी सपोर्ट उपलब्ध।
-              </p>
-            </div>
-          </div>
-
+        <div className="max-w-7xl mx-auto">
           {/* Branded Core Features Infographic Banner */}
-          <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#121214] shadow-2xl group">
+          <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#121214] shadow-2xl">
             <img 
               src="/branding/features-banner.jpg" 
               alt="ALL INDIA DRIVER Core Features & Highway Tools" 
-              className="w-full max-h-[460px] object-cover object-center group-hover:scale-[1.01] transition-transform duration-700" 
+              className="w-full h-auto object-cover object-center" 
             />
-            <div className="absolute top-4 left-4 flex items-center gap-2.5 bg-black/85 backdrop-blur-md px-3.5 py-1.5 rounded-2xl border border-white/20 shadow-md">
-              <img src="/branding/logo.jpg" alt="Logo" className="w-7 h-7 rounded-lg object-contain bg-[#16161A] p-0.5 border border-[#FFC400]/40" />
-              <div>
-                <span className="text-xs font-black text-white tracking-wide block leading-tight">CORE HIGHWAY FEATURES</span>
-                <span className="text-[9px] text-[#FFC400] font-black uppercase tracking-wider block">Smart Tools • Strong Support</span>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -1535,19 +1290,12 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
       <section id="support" className="py-20 px-4 sm:px-8 bg-[#121214] border-t border-white/10">
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Driver Community & Welfare Banner */}
-          <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#0B0B0C] shadow-2xl group">
+          <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#0B0B0C] shadow-2xl">
             <img 
               src="/branding/community-banner.jpg" 
               alt="ALL INDIA DRIVER Community & Welfare" 
-              className="w-full max-h-[440px] object-cover object-center group-hover:scale-[1.01] transition-transform duration-700" 
+              className="w-full h-auto object-cover object-center" 
             />
-            <div className="absolute top-4 left-4 flex items-center gap-2.5 bg-black/85 backdrop-blur-md px-3.5 py-1.5 rounded-2xl border border-white/20 shadow-md">
-              <img src="/branding/logo.jpg" alt="Logo" className="w-7 h-7 rounded-lg object-contain bg-[#16161A] p-0.5 border border-[#FFC400]/40" />
-              <div>
-                <span className="text-xs font-black text-white tracking-wide block leading-tight">COMMUNITY & WELFARE</span>
-                <span className="text-[9px] text-[#FFC400] font-black uppercase tracking-wider block">साथ चलें • साथ बढ़ें</span>
-              </div>
-            </div>
           </div>
 
           <div className="bg-gradient-to-br from-[#0B0B0C] to-[#16161A] border border-[#E10600]/30 rounded-3xl p-8 sm:p-12 text-center space-y-6 shadow-2xl">
@@ -1586,29 +1334,13 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
       <section id="faq" className="py-20 px-4 sm:px-8 bg-[#0B0B0C] border-t border-white/10">
         <div className="max-w-3xl mx-auto space-y-8">
           
-          <div className="text-center space-y-3">
-            <span className="text-xs font-black uppercase tracking-widest text-[#E10600] bg-[#121214] px-3.5 py-1.5 rounded-full border border-white/10">
-              FREQUENTLY ASKED QUESTIONS
-            </span>
-            <h2 className="text-3xl font-black uppercase text-white font-display">
-              अक्सर पूछे जाने वाले प्रश्न
-            </h2>
-          </div>
-
           {/* FAQ Visual Infographic Banner */}
-          <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#121214] shadow-2xl group">
+          <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#121214] shadow-2xl">
             <img 
               src="/branding/faq-banner.jpg" 
               alt="Frequently Asked Questions - ALL INDIA DRIVER" 
-              className="w-full max-h-[380px] object-cover object-center group-hover:scale-[1.01] transition-transform duration-700" 
+              className="w-full h-auto object-cover object-center" 
             />
-            <div className="absolute top-4 left-4 flex items-center gap-2.5 bg-black/85 backdrop-blur-md px-3.5 py-1.5 rounded-2xl border border-white/20 shadow-md">
-              <img src="/branding/logo.jpg" alt="Logo" className="w-7 h-7 rounded-lg object-contain bg-[#16161A] p-0.5 border border-[#FFC400]/40" />
-              <div>
-                <span className="text-xs font-black text-white tracking-wide block leading-tight">FAQ & HIGHWAY HELP</span>
-                <span className="text-[9px] text-[#FFC400] font-black uppercase tracking-wider block">आपके सवाल • हमारे जवाब</span>
-              </div>
-            </div>
           </div>
 
           <div className="space-y-3">
