@@ -195,8 +195,19 @@ export const MechanicDashboard: React.FC<Props> = ({
           localStorage.removeItem('all_india_driver_auth_type');
           localStorage.removeItem('all_india_driver_user_email');
           localStorage.removeItem('all_india_driver_verified_email');
+          localStorage.removeItem('all_india_driver_selected_role');
+          localStorage.removeItem('aid_current_screen');
         } catch {}
-        setScreen('login');
+        setScreen('intro');
+      }}
+      onDeleteAccountClick={async () => {
+        try {
+          await insforge.auth.signOut();
+        } catch {}
+        try {
+          localStorage.clear();
+        } catch {}
+        setScreen('intro');
       }}
       onDonateClick={onOpenDonate}
     >
