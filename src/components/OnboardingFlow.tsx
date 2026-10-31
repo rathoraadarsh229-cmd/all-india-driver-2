@@ -17,6 +17,7 @@ import { MechanicProfileSetupView } from './MechanicProfileSetupView';
 import { ShareAppModal } from './ShareAppModal';
 import { HearButton } from './HearButton';
 import { LegalTermsPrivacyModal, LegalDocType } from './LegalTermsPrivacyModal';
+import { getT } from '../utils/i18n';
 
 interface OnboardingFlowProps {
   currentStep: AppScreen;
@@ -372,7 +373,8 @@ export function OnboardingFlow({
     }).catch(() => {});
 
     setIsGoogleLoading(false);
-    navigateToRoleScreen();
+    // User requested: "sign in karne ke baad apni language select kare ye page open hona chaiye or uske baad select roll wala page"
+    setScreen('language');
   };
 
   // Real Google OAuth Handler (Opens Google's real sign-in screen)
@@ -468,33 +470,23 @@ export function OnboardingFlow({
     return () => { cancelled = true; };
   }, []);
 
-  // Multilingual translations
+  // Multilingual translations powered by comprehensive i18n
+  const i18n = getT(selectedLanguage);
   const t = {
-    hi: {
-      selectLang: 'अपनी भाषा चुनें',
-      continue: 'आगे बढ़ें',
-      loginTitle: 'लॉगिन / साइन-अप',
-      loginSubtitle: 'ऑल इंडिया ड्राइवर नेटवर्क में आपका स्वागत है',
-      roleTitle: 'आपकी भूमिका चुनें',
-      roleSubtitle: 'आप इस ऐप का उपयोग कैसे करना चाहते हैं?',
-      isOwner: 'मुझे ड्राइवर चाहिए',
-      isOwnerDesc: 'गाड़ी मालिक / ट्रांसपोर्टर',
-      isDriver: 'मैं ड्राइवर हूँ',
-      isDriverDesc: 'प्रतिष्ठित नौकरी और सुरक्षित भुगतान'
-    },
-    en: {
-      selectLang: 'Choose Your Language',
-      continue: 'Continue',
-      loginTitle: 'Login / Sign Up',
-      loginSubtitle: 'Welcome to All India Driver Network',
-      roleTitle: 'Select Your Role',
-      roleSubtitle: 'How do you want to use this app?',
-      isOwner: 'I Need a Driver',
-      isOwnerDesc: 'Vehicle Owner / Goods Transporter',
-      isDriver: 'I am a Driver',
-      isDriverDesc: 'Find premier jobs & safe pay guarantees'
-    }
-  }[selectedLanguage === 'hi' ? 'hi' : 'en'];
+    selectLang: i18n('selectLangTitle', 'अपनी भाषा चुनें'),
+    continue: i18n('continueToRole', 'आगे बढ़ें (भूमिका चुनें)'),
+    continueBtn: i18n('continueBtn', 'आगे बढ़ें'),
+    loginTitle: i18n('login', 'लॉगिन / साइन-अप'),
+    loginSubtitle: i18n('welcomeBack', 'ऑल इंडिया ड्राइवर नेटवर्क में आपका स्वागत है'),
+    roleTitle: i18n('whoAreYou', 'आपकी भूमिका चुनें'),
+    roleSubtitle: i18n('chooseRoleSub', 'आप इस ऐप का उपयोग कैसे करना चाहते हैं?'),
+    isOwner: i18n('ownerRoleTitle', 'गाड़ी मालिक (Owner)'),
+    isOwnerDesc: i18n('ownerRoleSub', 'गाड़ी के लिए ड्राइवर चाहिए'),
+    isDriver: i18n('driverRoleTitle', 'वाहन चालक (Driver)'),
+    isDriverDesc: i18n('driverRoleSub', 'गाड़ी चलाने का काम चाहिए (0% कमीशन)'),
+    isMechanic: i18n('mechanicRoleTitle', 'हाईवे मैकेनिक (Mechanic)'),
+    isMechanicDesc: i18n('mechanicRoleSub', 'गाड़ी ठीक करने व गैराज का काम')
+  };
 
   if (currentStep === 'splash') {
     return (
@@ -689,26 +681,30 @@ export function OnboardingFlow({
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={() => setScreen('login')}
+                onClick={() => setScreen('intro')}
                 className="p-2 rounded-xl bg-[#1A1A22] hover:bg-[#252530] text-gray-300 hover:text-white transition-all cursor-pointer border border-white/10 flex items-center gap-1.5 text-xs font-bold"
-                title="लॉगिन पर वापस जाएं"
+                title="पीछे जाएं"
               >
-                <ArrowLeft className="h-4 w-4 text-[#E10600]" />
-                <span className="hidden sm:inline">लॉगिन (Login)</span>
+                <ArrowLeft className="h-4 w-4 text-[#FFC400]" />
+                <span className="hidden sm:inline">Back</span>
               </button>
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-[#E10600] flex items-center justify-center text-white shadow-sm">
-                  <Languages className="h-4 w-4 text-white" />
+                <div className="w-8 h-8 rounded-lg bg-[#FFC400] flex items-center justify-center text-gray-950 shadow-sm">
+                  <Languages className="h-4 w-4 text-gray-950" />
                 </div>
                 <div>
-                  <h2 className="text-base sm:text-lg font-black text-white font-display uppercase tracking-wide">{t.selectLang}</h2>
-                  <p className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">पूरे भारत की 28 राज्य भाषाएं</p>
+                  <h2 className="text-base sm:text-lg font-black text-white font-display uppercase tracking-wide">
+                    {i18n('selectLangTitle', 'अपनी भाषा चुनें')}
+                  </h2>
+                  <p className="text-[11px] text-[#FFC400] font-bold uppercase tracking-wider">
+                    {i18n('allIndiaLangSub', 'पूरे भारत की 28 राज्य भाषाएं')}
+                  </p>
                 </div>
               </div>
             </div>
             {selectedStateName && (
-              <span className="text-xs font-black bg-[#E10600]/20 text-[#E10600] border border-[#E10600]/40 px-3 py-1 rounded-full flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5 text-[#E10600]" />
+              <span className="text-xs font-black bg-[#FFC400]/20 text-[#FFC400] border border-[#FFC400]/40 px-3 py-1 rounded-full flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5 text-[#FFC400]" />
                 {selectedStateName}
               </span>
             )}
@@ -721,23 +717,23 @@ export function OnboardingFlow({
               onClick={() => setLangTab('languages')}
               className={`flex-1 py-2 px-4 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
                 langTab === 'languages'
-                  ? 'bg-[#E10600] text-white shadow-md'
+                  ? 'bg-[#FFC400] text-gray-950 shadow-md font-black'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
-              🌐 भाषाएं (Languages)
+              {i18n('popularLanguagesTab', '🌐 भाषाएं (Languages)')}
             </button>
             <button
               type="button"
               onClick={() => setLangTab('states')}
               className={`flex-1 py-2 px-4 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 ${
                 langTab === 'states'
-                  ? 'bg-[#E10600] text-white shadow-md'
+                  ? 'bg-[#FFC400] text-gray-950 shadow-md font-black'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
-              <span>🏛️ 28 राज्य निर्देशिका</span>
-              <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-black">28</span>
+              <span>{i18n('stateDirectoryTab', '🏛️ 28 राज्य निर्देशिका')}</span>
+              <span className="text-[10px] bg-black/20 text-gray-900 px-2 py-0.5 rounded-full font-black">28</span>
             </button>
           </div>
 
@@ -751,15 +747,20 @@ export function OnboardingFlow({
                     <button
                       type="button"
                       key={lang.code}
-                      onClick={() => setSelectedLanguage(lang.code)}
+                      onClick={() => {
+                        setSelectedLanguage(lang.code);
+                        try {
+                          localStorage.setItem('aid_selected_lang', lang.code);
+                        } catch {}
+                      }}
                       className={`p-4 rounded-2xl border text-left transition-all relative flex flex-col justify-between cursor-pointer min-h-[90px] ${
                         isSelected 
-                          ? 'border-2 border-[#E10600] bg-[#E10600]/15 shadow-lg shadow-[#E10600]/20 text-white' 
+                          ? 'border-2 border-[#FFC400] bg-[#FFC400]/15 shadow-lg shadow-[#FFC400]/20 text-white ring-1 ring-[#FFC400]/40' 
                           : 'border-white/10 bg-[#1A1A22] hover:border-white/30 text-gray-300 hover:text-white'
                       }`}
                     >
                       <span className={`text-[10px] font-black tracking-wider uppercase ${
-                        isSelected ? 'text-[#E10600]' : 'text-gray-500'
+                        isSelected ? 'text-[#FFC400]' : 'text-gray-500'
                       }`}>
                         {lang.code === 'hi' ? 'राजभाषा' : lang.code === 'en' ? 'International' : 'Regional'}
                       </span>
@@ -768,7 +769,9 @@ export function OnboardingFlow({
                         <span className="text-base font-black text-white mt-0.5 block">{lang.nativeLabel}</span>
                       </div>
                       {isSelected && (
-                        <span className="absolute top-3 right-3 h-3 w-3 bg-[#E10600] rounded-full flex items-center justify-center text-[8px] text-white font-bold" />
+                        <span className="absolute top-3 right-3 h-3.5 w-3.5 bg-[#FFC400] rounded-full flex items-center justify-center text-[9px] text-gray-950 font-black shadow-xs">
+                          ✓
+                        </span>
                       )}
                     </button>
                   );
@@ -795,7 +798,7 @@ export function OnboardingFlow({
                   value={stateSearchQuery}
                   onChange={(e) => setStateSearchQuery(e.target.value)}
                   placeholder="राज्य या भाषा खोजें (Search State or Language)..."
-                  className="w-full pl-10 pr-4 py-2.5 bg-[#1A1A22] border border-white/10 rounded-xl text-xs font-bold text-white placeholder-gray-500 focus:outline-none focus:border-[#E10600] focus:ring-1 focus:ring-[#E10600]"
+                  className="w-full pl-10 pr-4 py-2.5 bg-[#1A1A22] border border-white/10 rounded-xl text-xs font-bold text-white placeholder-gray-500 focus:outline-none focus:border-[#FFC400] focus:ring-1 focus:ring-[#FFC400]"
                 />
               </div>
 
@@ -816,6 +819,9 @@ export function OnboardingFlow({
                       onClick={() => {
                         setSelectedStateName(item.state);
                         setSelectedLanguage(item.primaryCode);
+                        try {
+                          localStorage.setItem('aid_selected_lang', item.primaryCode);
+                        } catch {}
                         setOwnerData((prev) => ({
                           ...prev,
                           state: item.state,
@@ -824,11 +830,11 @@ export function OnboardingFlow({
                       }}
                       className={`w-full px-4 py-3 flex items-center text-left text-xs transition-colors cursor-pointer ${
                         isStateActive
-                          ? 'bg-[#E10600]/15 font-bold border-l-4 border-l-[#E10600] text-white'
+                          ? 'bg-[#FFC400]/15 font-bold border-l-4 border-l-[#FFC400] text-white'
                           : 'hover:bg-white/5 text-gray-300'
                       }`}
                     >
-                      <span className={`w-10 text-xs font-black ${isStateActive ? 'text-[#E10600]' : 'text-gray-500'}`}>
+                      <span className={`w-10 text-xs font-black ${isStateActive ? 'text-[#FFC400]' : 'text-gray-500'}`}>
                         {item.id}
                       </span>
                       <div className="flex-1 pr-3">
@@ -836,7 +842,7 @@ export function OnboardingFlow({
                           {item.state}
                         </span>
                         {isStateActive && (
-                          <span className="inline-block text-[10px] font-bold text-[#E10600] bg-[#E10600]/20 px-2 py-0.5 rounded-md mt-1">
+                          <span className="inline-block text-[10px] font-bold text-[#FFC400] bg-[#FFC400]/20 px-2 py-0.5 rounded-md mt-1">
                             ✓ चयनित राज्य व भाषा
                           </span>
                         )}
@@ -863,10 +869,10 @@ export function OnboardingFlow({
           <div className="pt-2 border-t border-white/10">
             <button
               onClick={() => setScreen('role-selection')}
-              className="w-full py-4 bg-[#E10600] hover:bg-[#c20500] text-white font-black text-xs rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(225,6,0,0.4)] cursor-pointer uppercase tracking-wider transition-all"
+              className="w-full py-4 bg-[#FFC400] hover:bg-amber-400 text-gray-950 font-black text-sm rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,196,0,0.3)] cursor-pointer uppercase tracking-wider transition-all min-h-[50px]"
             >
-              <span>{t.continue} (भूमिका चुनें)</span>
-              <ArrowRight className="h-4 w-4 text-white" />
+              <span>{i18n('continueToRole', 'आगे बढ़ें (भूमिका चुनें)')}</span>
+              <ArrowRight className="h-4 w-4 text-gray-950" />
             </button>
           </div>
         </div>
@@ -1046,12 +1052,10 @@ export function OnboardingFlow({
         <div className="my-auto py-6 space-y-5 text-left">
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-white leading-tight font-display tracking-tight">
-              {selectedLanguage === 'hi' ? 'Aap kaun hain?' : 'Who are you?'}
+              {t.roleTitle}
             </h1>
             <p className="text-xs sm:text-sm text-gray-400 font-normal leading-relaxed mt-1.5">
-              {selectedLanguage === 'hi'
-                ? 'अपनी भूमिका चुनें। आप बाद में प्रोफाइल से भूमिका बदल सकते हैं।'
-                : 'Choose your role. You can switch roles later from your profile.'}
+              {t.roleSubtitle}
             </p>
           </div>
 
@@ -1080,10 +1084,10 @@ export function OnboardingFlow({
               </div>
               <div>
                 <h3 className="text-base sm:text-lg font-black text-white leading-tight">
-                  Driver
+                  {t.isDriver}
                 </h3>
                 <p className="text-xs text-gray-400 font-medium leading-snug mt-1">
-                  {selectedLanguage === 'hi' ? 'Gaadi chalane ka kaam chahiye' : 'Looking for driving work'}
+                  {t.isDriverDesc}
                 </p>
               </div>
             </button>
@@ -1110,10 +1114,10 @@ export function OnboardingFlow({
               </div>
               <div>
                 <h3 className="text-base sm:text-lg font-black text-white leading-tight">
-                  Owner
+                  {t.isOwner}
                 </h3>
                 <p className="text-xs text-gray-400 font-medium leading-snug mt-1">
-                  {selectedLanguage === 'hi' ? 'Gaadi ke liye driver chahiye' : 'Looking for drivers'}
+                  {t.isOwnerDesc}
                 </p>
               </div>
             </button>
@@ -1140,10 +1144,10 @@ export function OnboardingFlow({
               </div>
               <div>
                 <h3 className="text-base sm:text-lg font-black text-white leading-tight">
-                  Mechanic
+                  {t.isMechanic}
                 </h3>
                 <p className="text-xs text-gray-400 font-medium leading-snug mt-1">
-                  {selectedLanguage === 'hi' ? 'Gaadi theek karne ka kaam' : 'Vehicle repair and maintenance work'}
+                  {t.isMechanicDesc}
                 </p>
               </div>
             </button>
@@ -1152,9 +1156,11 @@ export function OnboardingFlow({
         </div>
 
         <div className="w-full rounded-2xl border border-[#FFC400]/25 bg-[#FFC400]/[0.07] px-4 py-3 text-left">
-          <p className="text-[10px] font-black uppercase tracking-wider text-[#FFC400]">अगला कदम (Next step)</p>
+          <p className="text-[10px] font-black uppercase tracking-wider text-[#FFC400]">
+            {i18n('nextStepLabel', 'अगला कदम (Next step)')}
+          </p>
           <p className="mt-1 text-xs leading-relaxed text-gray-300">
-            भूमिका चुनने के बाद लॉगिन (ज़रूरत होने पर), फिर अपनी प्रोफाइल पूरी करें। इसके बाद आपका संबंधित डैशबोर्ड खुलेगा।
+            {i18n('nextStepHint', 'भूमिका चुनने के बाद अपनी प्रोफाइल पूरी करें। इसके बाद आपका संबंधित डैशबोर्ड खुलेगा।')}
           </p>
         </div>
 
@@ -1165,17 +1171,17 @@ export function OnboardingFlow({
             onClick={handleProceed}
             className="w-full py-4 px-6 bg-[#FFC400] hover:bg-amber-400 active:scale-[0.99] text-gray-950 font-black text-base rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20 transition-all cursor-pointer min-h-[52px]"
           >
-            {selectedLanguage === 'hi' ? 'Aage badhein' : 'Continue'}
+            {t.continueBtn}
           </button>
 
           <div className="text-xs sm:text-sm text-gray-400 text-center pt-2">
-            <span>{selectedLanguage === 'hi' ? 'Pehle se account hai? ' : 'Already have an account? '}</span>
+            <span>{i18n('alreadyAccount', 'पहले से अकाउंट है?')} </span>
             <button
               type="button"
               onClick={() => setScreen('login')}
               className="font-bold text-white hover:text-[#FFC400] underline ml-1 cursor-pointer transition-colors"
             >
-              Login
+              {i18n('login', 'लॉगिन')}
             </button>
           </div>
         </div>
@@ -1489,10 +1495,12 @@ export function OnboardingFlow({
                   </div>
                 </div>
 
-                {/* Geographic Hub selection */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                {/* Geographic Hub selection: State, District, and Tehsil */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                   <div className="space-y-1.5 text-left">
-                    <span className="text-[10px] text-gray-400 font-extrabold block uppercase tracking-wider">STATE HUB / राज्य</span>
+                    <span className="text-[10px] text-gray-400 font-extrabold block uppercase tracking-wider">
+                      {i18n('stateLabel', 'STATE HUB / राज्य')}
+                    </span>
                     <select
                       value={ownerData.state}
                       onChange={(e) => handleStateChange(e.target.value)}
@@ -1505,7 +1513,9 @@ export function OnboardingFlow({
                   </div>
 
                   <div className="space-y-1.5 text-left">
-                    <span className="text-[10px] text-gray-400 font-extrabold block uppercase tracking-wider">DISTRICT HUB / जिला</span>
+                    <span className="text-[10px] text-gray-400 font-extrabold block uppercase tracking-wider">
+                      {i18n('districtLabel', 'DISTRICT HUB / जिला')}
+                    </span>
                     <select
                       value={ownerData.city}
                       onChange={(e) => setOwnerData(prev => ({ ...prev, city: e.target.value }))}
@@ -1516,7 +1526,41 @@ export function OnboardingFlow({
                       ))}
                     </select>
                   </div>
+
+                  <div className="space-y-1.5 text-left">
+                    <span className="text-[10px] text-gray-400 font-extrabold block uppercase tracking-wider">
+                      {i18n('tehsilLabel', 'TEHSIL / तहसील')}
+                    </span>
+                    <input
+                      type="text"
+                      value={ownerData.tehsil || ''}
+                      onChange={(e) => setOwnerData(prev => ({ ...prev, tehsil: e.target.value }))}
+                      placeholder="उदा. वारासिवनी, लालबर्रा"
+                      className="w-full bg-[#081B12] border border-emerald-500/30 text-white font-bold text-xs px-3 py-2.5 rounded-xl outline-none focus:border-[#10B981] placeholder:text-gray-500"
+                    />
+                  </div>
                 </div>
+
+                {/* Tehsil / Area suggestions from ALL_STATES_DATA */}
+                {ALL_STATES_DATA[ownerData.state]?.[ownerData.city] && (
+                  <div className="flex flex-wrap gap-1.5 items-center pt-0.5">
+                    <span className="text-[10px] text-gray-400 font-bold">सुझाव तहसील / क्षेत्र:</span>
+                    {ALL_STATES_DATA[ownerData.state][ownerData.city].slice(0, 4).map(hub => (
+                      <button
+                        key={hub}
+                        type="button"
+                        onClick={() => setOwnerData(prev => ({ ...prev, tehsil: hub }))}
+                        className={`text-[10px] px-2 py-0.5 rounded-md font-bold transition-all cursor-pointer ${
+                          ownerData.tehsil === hub
+                            ? 'bg-emerald-500 text-black'
+                            : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 hover:bg-emerald-500/20'
+                        }`}
+                      >
+                        + {hub}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 {/* Village / Gaon Name Input */}
                 <div className="space-y-1.5 text-left border-t border-emerald-500/20 pt-3">
