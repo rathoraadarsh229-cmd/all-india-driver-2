@@ -296,7 +296,8 @@ export function OnboardingFlow({
         return;
       }
     } catch {}
-    setScreen('role-selection');
+    // If not authenticated, always show Welcome / Intro screen for Google Sign-in
+    setScreen('intro');
   };
 
   // Fast auto-redirect from Splash screen (1.2s duration)
