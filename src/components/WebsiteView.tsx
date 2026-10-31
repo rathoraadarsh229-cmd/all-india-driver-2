@@ -27,6 +27,10 @@ interface WebsiteViewProps {
   onNavigatePage?: (page: string) => void;
   theme?: 'light' | 'dark';
   toggleTheme?: () => void;
+  isAuthenticated?: boolean;
+  userEmail?: string;
+  userRole?: 'driver' | 'owner' | 'mechanic' | null;
+  onLogout?: () => void;
 }
 
 export const WebsiteView: React.FC<WebsiteViewProps> = ({
@@ -37,7 +41,11 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
   onBookWithEstimate,
   onNavigatePage,
   theme = 'light',
-  toggleTheme
+  toggleTheme,
+  isAuthenticated = false,
+  userEmail = '',
+  userRole = null,
+  onLogout
 }) => {
   // Navigation & UI States
   const [activeSection, setActiveSection] = useState<string>('overview');
@@ -389,13 +397,40 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
               </button>
             )}
 
-            {/* Direct Login Button */}
-            <button
-              onClick={() => onLaunchApp('intro')}
-              className="bg-[var(--primary)] text-[var(--primary-text)] font-bold px-4 py-1 rounded-full hover:bg-[var(--primary-hover)] transition-all shadow-sm cursor-pointer text-xs"
-            >
-              {lang === 'hi' ? 'लॉगिन / प्रवेश' : 'Sign In'}
-            </button>
+            {/* User Account / Direct Login Button */}
+            {isAuthenticated ? (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => onLaunchApp()}
+                  className="bg-[var(--primary)] text-[var(--primary-text)] font-bold px-3 py-1 rounded-full hover:bg-[var(--primary-hover)] transition-all shadow-sm cursor-pointer text-xs flex items-center gap-1.5"
+                  title={userEmail || 'Active User'}
+                >
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>
+                    {userRole === 'driver' ? (lang === 'hi' ? 'ड्राइवर डैशबोर्ड' : 'Driver Dashboard') :
+                     userRole === 'owner' ? (lang === 'hi' ? 'मालिक डैशबोर्ड' : 'Owner Dashboard') :
+                     userRole === 'mechanic' ? (lang === 'hi' ? 'मैकेनिक डैशबोर्ड' : 'Mechanic Dashboard') :
+                     (lang === 'hi' ? 'डैशबोर्ड' : 'Dashboard')}
+                  </span>
+                </button>
+                {onLogout && (
+                  <button
+                    onClick={onLogout}
+                    className="bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold px-2.5 py-1 rounded-full border border-red-500/30 text-xs transition-all cursor-pointer"
+                    title={lang === 'hi' ? 'लॉग आउट' : 'Log out'}
+                  >
+                    {lang === 'hi' ? 'लॉग आउट' : 'Logout'}
+                  </button>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => onLaunchApp('intro')}
+                className="bg-[var(--primary)] text-[var(--primary-text)] font-bold px-4 py-1 rounded-full hover:bg-[var(--primary-hover)] transition-all shadow-sm cursor-pointer text-xs"
+              >
+                {lang === 'hi' ? 'लॉगिन / प्रवेश' : 'Sign In'}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -492,10 +527,10 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
           {/* Quick Action CTAs */}
           <div className="flex items-center gap-3">
             <button
-              onClick={() => onLaunchApp('intro')}
+              onClick={() => onLaunchApp(isAuthenticated ? undefined : 'intro')}
               className="bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-[var(--primary-text)] font-bold text-xs px-5 py-2.5 rounded-xl shadow-sm transition-all cursor-pointer hidden sm:inline-flex items-center gap-1.5"
             >
-              <span>{lang === 'hi' ? 'ऐप पोर्टल खोलें' : 'Open Portal'}</span>
+              <span>{isAuthenticated ? (lang === 'hi' ? 'डैशबोर्ड खोलें' : 'Open Dashboard') : (lang === 'hi' ? 'ऐप पोर्टल खोलें' : 'Open Portal')}</span>
               <ChevronRight className="w-4 h-4" />
             </button>
 
@@ -563,11 +598,25 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
             </button>
             <div className="pt-2 flex flex-col gap-2">
               <button
-                onClick={() => onLaunchApp('intro')}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onLaunchApp(isAuthenticated ? undefined : 'intro');
+                }}
                 className="w-full py-2.5 bg-[var(--primary)] text-[var(--primary-text)] font-bold text-xs uppercase tracking-wider rounded-xl text-center shadow-sm"
               >
-                {lang === 'hi' ? 'ऐप पोर्टल खोलें' : 'Open App Portal'}
+                {isAuthenticated ? (lang === 'hi' ? 'डैशबोर्ड खोलें' : 'Open Dashboard') : (lang === 'hi' ? 'ऐप पोर्टल खोलें' : 'Open App Portal')}
               </button>
+              {isAuthenticated && onLogout && (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onLogout();
+                  }}
+                  className="w-full py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs rounded-xl text-center border border-red-500/30"
+                >
+                  {lang === 'hi' ? 'लॉग आउट' : 'Log out'}
+                </button>
+              )}
             </div>
             {toggleTheme && (
               <div className="pt-2 border-t border-[var(--card-border)] flex items-center justify-between px-2">
