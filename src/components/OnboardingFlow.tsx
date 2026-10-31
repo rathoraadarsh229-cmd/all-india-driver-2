@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { 
   Truck, Languages, ArrowRight, ShieldCheck, User, Users, ArrowLeft,
   Camera, Upload, Sparkles, RefreshCw, FileText, Mic, Volume2,
-  Mail, CheckCircle2, Lock, Image as ImageIcon, Trash2, Plus, Eye,
+  Lock, Image as ImageIcon, Trash2, Plus, Eye,
   AlertCircle, CheckCheck, Search, MapPin, Wrench, Smartphone, Share2, Phone,
   Zap, X
 } from 'lucide-react';
@@ -86,10 +86,6 @@ export function OnboardingFlow({
   const [langTab, setLangTab] = useState<'languages' | 'states'>('languages');
   const [stateSearchQuery, setStateSearchQuery] = useState('');
   const [selectedStateName, setSelectedStateName] = useState<string>('');
-  const [googleEmail, setGoogleEmail] = useState<string>(() => userEmail || (typeof window !== 'undefined' ? localStorage.getItem('all_india_driver_user_email') || '' : ''));
-  const [showSwitchEmail, setShowSwitchEmail] = useState<boolean>(false);
-  const [googleEmailInput, setGoogleEmailInput] = useState<string>('');
-  const [showGoogleModal, setShowGoogleModal] = useState<boolean>(false);
   const [introSlide, setIntroSlide] = useState<number>(0);
   const [showShareModal, setShowShareModal] = useState<boolean>(false);
 
@@ -360,39 +356,102 @@ export function OnboardingFlow({
     }
   };
 
-  // 🟢 Verified Google Sign-In Handler
-  const completeGoogleLogin = (chosenEmail?: string) => {
-    setError('');
-    setIsGoogleLoading(true);
-    const emailToUse = (chosenEmail || googleEmailInput || googleEmail || userEmail || 'user@gmail.com').trim();
+  // A session is marked as Google-authenticated only after InsForge returns a real user.
+  const finishVerifiedGoogleLogin = async (email: string) => {
+    const verifiedEmail = email.trim();
+    if (!verifiedEmail) throw new Error('Google account email was not returned.');
 
     try {
       localStorage.setItem('all_india_driver_is_authenticated', 'true');
       localStorage.setItem('all_india_driver_auth_type', 'gmail');
-      localStorage.setItem('all_india_driver_user_email', emailToUse);
-      localStorage.setItem('all_india_driver_verified_email', emailToUse);
+      localStorage.setItem('all_india_driver_user_email', verifiedEmail);
+      localStorage.setItem('all_india_driver_verified_email', verifiedEmail);
+      localStorage.setItem('all_india_driver_google_verified', 'true');
     } catch {}
 
-    if (setAuthType) setAuthType('gmail');
-    setUserEmail(emailToUse);
-    setGoogleEmail(emailToUse);
-
-    recordUserSessionToInsForge({
-      email: emailToUse,
+    setAuthType?.('gmail');
+    setUserEmail(verifiedEmail);
+    await recordUserSessionToInsForge({
+      email: verifiedEmail,
       authType: 'gmail',
-      role: userRole || 'pending'
-    }).catch(() => {});
-
-    setTimeout(() => {
-      setIsGoogleLoading(false);
-      setShowGoogleModal(false);
-      navigateToRoleScreen();
-    }, 350);
+      role: userRole || (localStorage.getItem('all_india_driver_selected_role') || 'pending')
+    });
+    setIsGoogleLoading(false);
+    navigateToRoleScreen();
   };
 
-  const handleGoogleSignIn = async (overrideEmail?: string) => {
-    const emailToUse = (overrideEmail || googleEmailInput || googleEmail || userEmail || 'user@gmail.com').trim();
-    completeGoogleLogin(emailToUse);
+  // InsForge SDK automatically exchanges the OAuth callback code for a session.
+  // Read that session from the backend; never trust a typed email as proof of identity.
+  useEffect(() => {
+    let cancelled = false;
+    const checkGoogleSession = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const hasOAuthReturn = params.has('insforge_code') || params.has('insforge_error') || params.has('error');
+      if (!hasOAuthReturn && currentStep !== 'intro' && currentStep !== 'login') return;
+
+      if (hasOAuthReturn) setIsGoogleLoading(true);
+      let lastAuthMessage = '';
+      const maxAttempts = hasOAuthReturn ? 8 : 1;
+      try {
+        // On an OAuth return, the SDK may still be exchanging InsForge's one-time
+        // callback code. Retry briefly before showing a verification error.
+        for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+          if (cancelled) return;
+          try {
+            const { data, error: authError } = await insforge.auth.getCurrentUser();
+            if (authError) lastAuthMessage = authError.message || 'Authentication failed';
+            const accountEmail = data?.user?.email;
+            if (accountEmail) {
+              await finishVerifiedGoogleLogin(accountEmail);
+              return;
+            }
+          } catch (authError) {
+            lastAuthMessage = authError instanceof Error ? authError.message : 'Authentication failed';
+          }
+          if (attempt < maxAttempts - 1) {
+            await new Promise(resolve => window.setTimeout(resolve, 500));
+          }
+        }
+
+        if (!cancelled && hasOAuthReturn) {
+          setError(lastAuthMessage
+            ? `Google verification failed: ${lastAuthMessage}`
+            : 'Google से पुष्टि पूरी नहीं हुई। कृपया फिर से Continue with Google दबाएँ। InsForge में Google OAuth और Redirect URL भी जाँचें।');
+        }
+      } finally {
+        if (!cancelled) setIsGoogleLoading(false);
+      }
+    };
+
+    void checkGoogleSession();
+    return () => { cancelled = true; };
+  }, [currentStep]);
+
+  const handleGoogleSignIn = async () => {
+    setError('');
+    setIsGoogleLoading(true);
+
+    if (!isInsForgeConfigured) {
+      setIsGoogleLoading(false);
+      setError('Authentication service is not configured. Please check the InsForge settings.');
+      return;
+    }
+
+    try {
+      // Preserve the selected role across Google's redirect back to the app.
+      if (userRole) localStorage.setItem('all_india_driver_selected_role', userRole);
+      const redirectTo = `${window.location.origin}${window.location.pathname}`;
+      const { error: oauthError } = await insforge.auth.signInWithOAuth('google', {
+        redirectTo,
+        additionalParams: { prompt: 'select_account' }
+      });
+      if (oauthError) throw oauthError;
+      // The SDK redirects the browser to Google. Do not mark the user signed in here.
+    } catch (authError) {
+      const message = authError instanceof Error ? authError.message : 'Unable to start Google sign-in';
+      setIsGoogleLoading(false);
+      setError(`Google sign-in शुरू नहीं हो पाया: ${message}`);
+    }
   };
 
   // Multilingual translations
@@ -826,40 +885,18 @@ export function OnboardingFlow({
             </div>
           )}
 
-          {/* Action Area: Gmail Input + Continue with Google Button */}
+          {/* Real Google OAuth sign-in: Google itself verifies the account. */}
           <div className="space-y-4 pt-6 w-full">
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">
-                {selectedLanguage === 'hi' ? 'Google / Gmail खाता दर्ज करें' : 'Enter Google / Gmail Account'}
-              </label>
-              <div className="flex items-center gap-2 bg-[#16161A] border border-white/15 focus-within:border-[#FFC400] rounded-xl px-3.5 py-1 min-h-[48px] transition-all">
-                <Mail className="h-4 w-4 text-gray-400 shrink-0" />
-                <input
-                  type="email"
-                  value={googleEmailInput}
-                  onChange={(e) => setGoogleEmailInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      const target = googleEmailInput.trim() || 'user@gmail.com';
-                      completeGoogleLogin(target);
-                    }
-                  }}
-                  placeholder="उदा: driver@gmail.com"
-                  className="w-full py-2 bg-transparent text-sm font-medium text-white placeholder-gray-500 focus:outline-none"
-                />
-                {googleEmailInput.trim().includes('@') && (
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                )}
-              </div>
+            <div className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-xs leading-relaxed text-gray-300">
+              {selectedLanguage === 'hi'
+                ? 'नीचे बटन दबाएँ। Google का सुरक्षित Sign-in पेज खुलेगा; अपना Google Account चुनकर अनुमति दें। केवल सफल पुष्टि के बाद ही लॉगिन होगा।'
+                : 'Select the button below. Google will open its secure sign-in page. Choose your account and approve; you will be signed in only after verification succeeds.'}
             </div>
 
-            {/* Main Google Login Button (Matching Mockup) */}
+            {/* Main Google Login Button */}
             <button
               type="button"
-              onClick={() => {
-                const target = googleEmailInput.trim() || (googleEmail && googleEmail.includes('@') ? googleEmail : 'user@gmail.com');
-                completeGoogleLogin(target);
-              }}
+              onClick={() => { void handleGoogleSignIn(); }}
               disabled={isGoogleLoading}
               className="w-full py-4 px-6 bg-white hover:bg-gray-100 active:scale-[0.99] text-gray-900 font-bold text-sm sm:text-base rounded-2xl flex items-center justify-center gap-3 transition-all cursor-pointer shadow-lg min-h-[52px] disabled:opacity-70"
             >
@@ -877,8 +914,8 @@ export function OnboardingFlow({
             {/* Subtext below Google button */}
             <p className="text-xs text-gray-400 text-center leading-relaxed pt-1">
               {selectedLanguage === 'hi'
-                ? 'Sirf Gmail se login hota hai. Koi password yaad rakhne ki zaroorat nahi.'
-                : 'Sign in only with Gmail. No passwords required.'}
+                ? 'आपका पासवर्ड इस ऐप में नहीं लिया जाता। Google ही आपकी पहचान की पुष्टि करता है।'
+                : 'Your Google password is never entered in this app. Google verifies your identity.'}
             </p>
           </div>
         </div>
@@ -986,8 +1023,8 @@ export function OnboardingFlow({
             </h1>
             <p className="text-xs sm:text-sm text-gray-400 font-normal leading-relaxed mt-1.5">
               {selectedLanguage === 'hi'
-                ? 'Apna role chuniye. Baad me badla nahi ja sakta.'
-                : 'Choose your role. Cannot be changed later.'}
+                ? 'अपनी भूमिका चुनें। आप बाद में प्रोफाइल से भूमिका बदल सकते हैं।'
+                : 'Choose your role. You can switch roles later from your profile.'}
             </p>
           </div>
 
@@ -1087,6 +1124,13 @@ export function OnboardingFlow({
           </div>
         </div>
 
+        <div className="w-full rounded-2xl border border-[#FFC400]/25 bg-[#FFC400]/[0.07] px-4 py-3 text-left">
+          <p className="text-[10px] font-black uppercase tracking-wider text-[#FFC400]">अगला कदम (Next step)</p>
+          <p className="mt-1 text-xs leading-relaxed text-gray-300">
+            भूमिका चुनने के बाद लॉगिन (ज़रूरत होने पर), फिर अपनी प्रोफाइल पूरी करें। इसके बाद आपका संबंधित डैशबोर्ड खुलेगा।
+          </p>
+        </div>
+
         {/* Bottom Actions: Solid "Aage badhein" Button & Login Link */}
         <div className="space-y-3.5 w-full pb-4">
           <button
@@ -1180,6 +1224,7 @@ export function OnboardingFlow({
               <h2 className="text-xl sm:text-2xl font-black text-white font-display leading-tight">
                 गाड़ी मालिक का विवरण / Owner Profile Setup
               </h2>
+              <p className="text-[11px] font-bold text-emerald-300 mt-1">चरण 2 / 3 • भूमिका चुनें → प्रोफाइल भरें → डैशबोर्ड</p>
             </div>
           </div>
 
