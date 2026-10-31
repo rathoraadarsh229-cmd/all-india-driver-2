@@ -391,7 +391,7 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
 
             {/* Direct Login Button */}
             <button
-              onClick={() => onLaunchApp('login')}
+              onClick={() => onLaunchApp('intro')}
               className="bg-[var(--primary)] text-[var(--primary-text)] font-bold px-4 py-1 rounded-full hover:bg-[var(--primary-hover)] transition-all shadow-sm cursor-pointer text-xs"
             >
               {lang === 'hi' ? 'लॉगिन / प्रवेश' : 'Sign In'}
@@ -492,7 +492,7 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
           {/* Quick Action CTAs */}
           <div className="flex items-center gap-3">
             <button
-              onClick={() => onLaunchApp('role-selection')}
+              onClick={() => onLaunchApp('intro')}
               className="bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-[var(--primary-text)] font-bold text-xs px-5 py-2.5 rounded-xl shadow-sm transition-all cursor-pointer hidden sm:inline-flex items-center gap-1.5"
             >
               <span>{lang === 'hi' ? 'ऐप पोर्टल खोलें' : 'Open Portal'}</span>
@@ -563,7 +563,7 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
             </button>
             <div className="pt-2 flex flex-col gap-2">
               <button
-                onClick={() => onLaunchApp('role-selection')}
+                onClick={() => onLaunchApp('intro')}
                 className="w-full py-2.5 bg-[var(--primary)] text-[var(--primary-text)] font-bold text-xs uppercase tracking-wider rounded-xl text-center shadow-sm"
               >
                 {lang === 'hi' ? 'ऐप पोर्टल खोलें' : 'Open App Portal'}
@@ -618,7 +618,7 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
               {/* CTAs: [ड्राइवर बुक करें] and [ड्राइवर के रूप में जुड़ें] */}
               <div className="flex flex-wrap items-center gap-4 pt-2">
                 <button
-                  onClick={() => onLaunchApp('role-selection', 'owner')}
+                  onClick={() => onLaunchApp('intro', 'owner')}
                   className="bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-[var(--primary-text)] font-bold text-sm px-7 py-3.5 rounded-xl transition-all cursor-pointer flex items-center gap-2 group shadow-sm min-h-[48px]"
                 >
                   <span>{lang === 'hi' ? 'ड्राइवर बुक करें' : 'Book a Driver'}</span>
@@ -626,7 +626,7 @@ export const WebsiteView: React.FC<WebsiteViewProps> = ({
                 </button>
 
                 <button
-                  onClick={() => onLaunchApp('driver-profile-setup', 'driver')}
+                  onClick={() => onLaunchApp('intro', 'driver')}
                   className="bg-[var(--card)] hover:bg-[var(--card-subtle)] text-[var(--text)] font-bold text-sm px-7 py-3.5 rounded-xl border border-[var(--card-border)] transition-all cursor-pointer flex items-center gap-2 hover:border-[var(--primary)] min-h-[48px]"
                 >
                   <UserPlus className="w-4 h-4 text-[var(--primary)]" />
