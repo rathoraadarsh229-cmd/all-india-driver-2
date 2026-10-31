@@ -220,20 +220,24 @@ export default function DriverFlow({
     setPendingOppToAccept(null);
   };
 
-  const [selectedState, setSelectedState] = useState('Madhya Pradesh');
-  const [selectedDistrict, setSelectedDistrict] = useState('Balaghat');
+  const [selectedState, setSelectedState] = useState(driverData.state || 'Madhya Pradesh');
+  const [selectedDistrict, setSelectedDistrict] = useState(driverData.district || 'Balaghat');
+  const [typedTehsil, setTypedTehsil] = useState(driverData.tehsil || '');
   const [typedVillage, setTypedVillage] = useState('');
   const [isDriverListening, setIsDriverListening] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(true);
 
-  // Auto sync location string of driverData based on state, district, and village selections
+  // Auto sync location string of driverData based on state, district, tehsil, and village selections
   React.useEffect(() => {
-    const combinedLocation = `${typedVillage ? typedVillage + ', ' : ''}${selectedDistrict}, ${selectedState}`;
+    const combinedLocation = `${typedVillage ? typedVillage + ', ' : ''}${typedTehsil ? typedTehsil + ' (तहसील), ' : ''}${selectedDistrict}, ${selectedState}`;
     setDriverData((prev: any) => ({
       ...prev,
+      state: selectedState,
+      district: selectedDistrict,
+      tehsil: typedTehsil,
       location: combinedLocation
     }));
-  }, [selectedState, selectedDistrict, typedVillage]);
+  }, [selectedState, selectedDistrict, typedTehsil, typedVillage]);
 
   // Local or nested selectors mapping
   const activeSlots = driverData.timingSlots || ['Morning', 'Afternoon', 'Flexible'];
@@ -658,10 +662,12 @@ export default function DriverFlow({
                   </span>
                 </div>
 
-                {/* State and District selectors */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* State, District and Tehsil selectors */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="space-y-1.5 text-left">
-                    <span className="text-[10px] text-gray-400 font-extrabold block uppercase tracking-wider">STATE HUB / राज्य</span>
+                    <span className="text-[10px] text-gray-400 font-extrabold block uppercase tracking-wider">
+                      {t('stateLabel', 'STATE HUB / राज्य')}
+                    </span>
                     <select
                       value={selectedState}
                       onChange={(e) => {
@@ -681,7 +687,9 @@ export default function DriverFlow({
                   </div>
 
                   <div className="space-y-1.5 text-left">
-                    <span className="text-[10px] text-gray-400 font-extrabold block uppercase tracking-wider">DISTRICT / जिला</span>
+                    <span className="text-[10px] text-gray-400 font-extrabold block uppercase tracking-wider">
+                      {t('districtLabel', 'DISTRICT / जिला')}
+                    </span>
                     <select
                       value={selectedDistrict}
                       onChange={(e) => setSelectedDistrict(e.target.value)}
@@ -692,7 +700,41 @@ export default function DriverFlow({
                       ))}
                     </select>
                   </div>
+
+                  <div className="space-y-1.5 text-left">
+                    <span className="text-[10px] text-gray-400 font-extrabold block uppercase tracking-wider">
+                      {t('tehsilLabel', 'TEHSIL / तहसील')}
+                    </span>
+                    <input
+                      type="text"
+                      value={typedTehsil}
+                      onChange={(e) => setTypedTehsil(e.target.value)}
+                      placeholder="उदा. वारासिवनी, लालबर्रा"
+                      className="w-full bg-[#070D18] border border-cyan-500/30 text-white font-bold text-xs px-3 py-2.5 rounded-xl outline-none focus:border-[#0087FF] placeholder:text-gray-500"
+                    />
+                  </div>
                 </div>
+
+                {/* Tehsil Suggestions from ALL_STATES_DATA */}
+                {ALL_STATES_DATA[selectedState]?.[selectedDistrict] && (
+                  <div className="flex flex-wrap gap-1.5 items-center pt-0.5">
+                    <span className="text-[10px] text-gray-400 font-bold">सुझाव तहसील / क्षेत्र:</span>
+                    {ALL_STATES_DATA[selectedState][selectedDistrict].slice(0, 4).map(hub => (
+                      <button
+                        key={hub}
+                        type="button"
+                        onClick={() => setTypedTehsil(hub)}
+                        className={`text-[10px] px-2 py-0.5 rounded-md font-bold transition-all cursor-pointer ${
+                          typedTehsil === hub
+                            ? 'bg-cyan-500 text-black'
+                            : 'bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 hover:bg-cyan-500/20'
+                        }`}
+                      >
+                        + {hub}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 {/* Village Input with Type and Voice */}
                 <div className="space-y-1.5 text-left border-t border-cyan-500/20 pt-3">
