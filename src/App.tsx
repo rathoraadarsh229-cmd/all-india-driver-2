@@ -279,19 +279,22 @@ export default function App() {
       } catch {}
     }
 
-    if (isAuth && savedRole) {
-      // User is already logged in! Go straight to their dashboard, never to login/intro!
-      if (savedRole === 'driver') setCurrentScreen('driver-dashboard');
-      else if (savedRole === 'owner') setCurrentScreen('owner-dashboard');
-      else if (savedRole === 'mechanic') setCurrentScreen('mechanic-dashboard');
-      else setCurrentScreen('driver-dashboard');
-    } else if (screen) {
-      setCurrentScreen(screen);
+    if (isAuth) {
+      // User is already verified via Google! Go straight to their workspace or dashboard
+      if (screen && !['intro', 'login', 'splash'].includes(screen)) {
+        setCurrentScreen(screen);
+      } else if (savedRole === 'driver') {
+        setCurrentScreen('driver-dashboard');
+      } else if (savedRole === 'owner') {
+        setCurrentScreen('owner-dashboard');
+      } else if (savedRole === 'mechanic') {
+        setCurrentScreen('mechanic-dashboard');
+      } else {
+        setCurrentScreen('role-selection');
+      }
     } else {
-      if (role === 'driver' || userRole === 'driver') setCurrentScreen('driver-dashboard');
-      else if (role === 'owner' || userRole === 'owner') setCurrentScreen('owner-dashboard');
-      else if (role === 'mechanic' || userRole === 'mechanic') setCurrentScreen('mechanic-dashboard');
-      else setCurrentScreen('intro');
+      // First-time or logged-out user: MUST sign in / verify via Google first!
+      setCurrentScreen('intro');
     }
     setViewMode('app');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -299,9 +302,19 @@ export default function App() {
 
   // Deep Link Handler: Open Driver Profile
   const handleOpenDriverProfile = useCallback((driver: DriverProfile) => {
+    const isAuth = localStorage.getItem('all_india_driver_is_authenticated') === 'true';
     setSelectedDriver(driver);
     setUserRole('owner');
-    setCurrentScreen('driver-detail');
+    try {
+      localStorage.setItem('all_india_driver_selected_role', 'owner');
+    } catch {}
+
+    if (isAuth) {
+      setCurrentScreen('driver-detail');
+    } else {
+      // New user must verify via Google first
+      setCurrentScreen('intro');
+    }
     setViewMode('app');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
@@ -335,11 +348,19 @@ export default function App() {
       const existing = JSON.parse(localStorage.getItem('all_india_jobs') || '[]');
       localStorage.setItem('all_india_jobs', JSON.stringify([bookingJob, ...existing]));
       localStorage.setItem('aid_active_estimate', JSON.stringify(estimate));
+      localStorage.setItem('all_india_driver_selected_role', 'owner');
     } catch {}
 
     setUserRole('owner');
     setSelectedOwnerJob(bookingJob);
-    setCurrentScreen('owner-dashboard');
+
+    const isAuth = localStorage.getItem('all_india_driver_is_authenticated') === 'true';
+    if (isAuth) {
+      setCurrentScreen('owner-dashboard');
+    } else {
+      // New user must verify via Google first
+      setCurrentScreen('intro');
+    }
     setViewMode('app');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [ownerData]);
