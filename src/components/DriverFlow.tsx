@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { insforge } from '../insforge';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   User, Briefcase, MapPin, Truck, ShieldCheck, 
@@ -57,6 +58,10 @@ interface DriverFlowProps {
   selectedLanguage?: string;
   setSelectedLanguage?: (lang: string) => void;
   onOpenDonate?: () => void;
+  onOpenAiAssistant?: () => void;
+  onGoToWebsite?: () => void;
+  theme?: 'light' | 'dark';
+  onToggleTheme?: () => void;
 }
 
 const AVATAR_OPTIONS = [
@@ -123,7 +128,11 @@ export default function DriverFlow({
   authType = 'gmail',
   selectedLanguage = 'hi',
   setSelectedLanguage,
-  onOpenDonate
+  onOpenDonate,
+  onOpenAiAssistant,
+  onGoToWebsite,
+  theme,
+  onToggleTheme
 }: DriverFlowProps) {
   const t = getT(selectedLanguage);
   const [activeTab, setActiveTab] = useState<DashboardTab>('home');
@@ -395,9 +404,12 @@ export default function DriverFlow({
               <ArrowLeft className="h-4 w-4 text-cyan-400" />
               <span>पीछे (Back)</span>
             </button>
-            <span className="text-xs font-black text-cyan-300 bg-cyan-500/15 border border-cyan-400/40 px-3 py-1 rounded-full uppercase tracking-wider shadow-xs">
-              सारथी प्रोफाइल रजिस्ट्रेशन (Driver Blue Theme)
-            </span>
+            <div className="text-right">
+              <span className="text-xs font-black text-cyan-300 bg-cyan-500/15 border border-cyan-400/40 px-3 py-1 rounded-full uppercase tracking-wider shadow-xs">
+                Driver Profile Setup
+              </span>
+              <p className="text-[10px] font-bold text-cyan-200 mt-1">चरण 2 / 3 • भूमिका → प्रोफाइल → डैशबोर्ड</p>
+            </div>
           </div>
 
           <div className="text-center shrink-0 space-y-1">
@@ -857,6 +869,12 @@ export default function DriverFlow({
               </div>
             </div>
 
+            {/* Clear next-step hint */}
+            <div className="mt-5 rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-3 text-left">
+              <p className="text-[10px] font-black uppercase tracking-wider text-cyan-300">आगे क्या होगा?</p>
+              <p className="mt-1 text-xs leading-relaxed text-slate-300">जानकारी सेव करने के बाद रजिस्ट्रेशन की पुष्टि दिखेगी। फिर आप सीधे अपने ड्राइवर डैशबोर्ड पर पहुँचेंगे।</p>
+            </div>
+
             {/* Direct Save CTA inside form */}
             <div className="pt-4 border-t border-cyan-500/20">
               <button
@@ -956,6 +974,12 @@ export default function DriverFlow({
       {currentStep === 'driver-dashboard' && (
         <DashboardShell
           appName={t('appName', 'ALL INDIA DRIVER APP')}
+          roleKey="driver"
+          onOpenSOS={setShowNearbyMechanicModal ? () => setShowNearbyMechanicModal(true) : undefined}
+          onOpenAiAssistant={onOpenAiAssistant}
+          onGoToWebsite={onGoToWebsite}
+          theme={theme}
+          onToggleTheme={onToggleTheme}
           userName={driverData.name || 'सारथी ड्राइवर'}
           userPhone={driverData.phone || 'फ़ोन नंबर दर्ज नहीं'}
           userRoleTitle="ड्राइवर (सारथी)"
@@ -974,9 +998,16 @@ export default function DriverFlow({
           selectedLanguage={selectedLanguage}
           onLanguageChange={setSelectedLanguage}
           onSwitchRoleClick={() => setScreen('role-selection')}
-          onLogoutClick={() => {
+          onLogoutClick={async () => {
+            try {
+              await insforge.auth.signOut();
+            } catch {}
             try {
               localStorage.removeItem('all_india_driver_is_authenticated');
+              localStorage.removeItem('all_india_driver_google_verified');
+              localStorage.removeItem('all_india_driver_auth_type');
+              localStorage.removeItem('all_india_driver_user_email');
+              localStorage.removeItem('all_india_driver_verified_email');
             } catch {}
             setScreen('login');
           }}
