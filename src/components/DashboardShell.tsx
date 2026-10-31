@@ -136,9 +136,11 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
             title="मुख्य वेबसाइट पर जाएँ"
             aria-label="मुख्य वेबसाइट पर जाएँ"
           >
-            <div className="h-10 w-10 rounded-xl bg-[#E10600] text-white font-black flex items-center justify-center shrink-0 shadow-md shadow-[#E10600]/30 text-base">
-              <Truck className="h-5 w-5 text-white" />
-            </div>
+            <img
+              src="/branding/logo.jpg"
+              alt="ALL INDIA DRIVER Logo"
+              className="h-10 w-10 rounded-xl object-contain bg-[#16161A] p-0.5 border border-red-500/40 shrink-0 shadow-md shadow-red-500/20"
+            />
             <div className="min-w-0 flex flex-col">
               <span className="text-[12px] text-[#E10600] font-black uppercase tracking-wider truncate">
                 {appName || t('appName', 'ALL INDIA DRIVER APP')}

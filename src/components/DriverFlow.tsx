@@ -419,7 +419,13 @@ export default function DriverFlow({
           </div>
 
           <div className="text-center shrink-0 space-y-1">
-            <h2 className="text-2xl sm:text-3xl font-black text-white uppercase font-display leading-tight">Driver Details & Work Preferences</h2>
+            <div className="flex items-center justify-center gap-3">
+              <img src="/branding/logo.jpg" alt="ALL INDIA DRIVER Logo" className="h-12 w-12 rounded-2xl object-contain bg-[#16161A] p-1 border border-[#FFC400]/40 shadow-[0_0_15px_rgba(0,180,216,0.35)]" />
+              <div className="h-12 w-12 rounded-2xl bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(0,180,216,0.3)]">
+                <Truck className="h-6 w-6" />
+              </div>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-white uppercase font-display leading-tight">ALL INDIA DRIVER • चालक प्रोफाइल</h2>
             <p className="text-xs sm:text-sm text-cyan-300 font-semibold">बेसिक जानकारी भरकर तुरंत ऑल इंडिया ट्रिप्स व नौकरियां पाएं (0% कमीशन)</p>
           </div>
 

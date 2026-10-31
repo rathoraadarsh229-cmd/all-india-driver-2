@@ -518,23 +518,27 @@ export function OnboardingFlow({
           transition={{ duration: 0.6, ease: 'easeOut' }}
           className="flex flex-col items-center space-y-3"
         >
-          {/* Logo with gentle pulse */}
+          {/* Official Logo with gentle pulse */}
           <motion.div 
             animate={{ scale: [1, 1.04, 1] }}
             transition={{ repeat: Infinity, duration: 2.2, ease: 'easeInOut' }}
-            className="h-24 w-24 bg-brand-orange text-navy rounded-3xl flex items-center justify-center shadow-2xl shadow-brand-orange/25 relative"
+            className="h-28 w-28 rounded-3xl overflow-hidden p-1 bg-[#16161A] border-2 border-[#FFC400]/50 shadow-2xl shadow-[#FFC400]/25 relative flex items-center justify-center"
           >
-            <Truck className="h-12 w-12" />
+            <img 
+              src="/branding/logo.jpg" 
+              alt="ALL INDIA DRIVER Logo" 
+              className="w-full h-full object-contain rounded-2xl" 
+            />
           </motion.div>
           
-          <h1 className="text-2xl font-black text-white font-display tracking-tight leading-none mt-2">
-            All India Driver App
+          <h1 className="text-2xl sm:text-3xl font-black text-white font-display tracking-tight leading-none mt-2 uppercase">
+            ALL INDIA DRIVER
           </h1>
-          <div className="h-1 w-16 bg-brand-orange rounded-full" />
+          <div className="h-1 w-20 bg-gradient-to-r from-[#E10600] to-[#FFC400] rounded-full" />
           
-          {/* Clean tagline */}
-          <p className="text-brand-orange font-bold text-sm tracking-wide bg-brand-orange/10 px-4 py-1.5 rounded-full border border-brand-orange/20 mt-1">
-            सुरक्षित सफर, सही ड्राइवर
+          {/* Official brand tagline */}
+          <p className="text-[#FFC400] font-black text-xs uppercase tracking-wider bg-white/5 px-4 py-1.5 rounded-full border border-[#FFC400]/30 mt-1">
+            Drive Safe • Grow Together
           </p>
         </motion.div>
 
@@ -593,16 +597,20 @@ export function OnboardingFlow({
           </div>
         </div>
 
-        {/* Center/Left Content: Orange Truck Badge, Brand, Title & Subtitle */}
+        {/* Center/Left Content: Official Brand Logo, Brand, Title & Subtitle */}
         <div className="my-auto py-8 space-y-4 text-left">
-          {/* Orange Truck Badge */}
-          <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl sm:rounded-3xl bg-[#FFC400] flex items-center justify-center shadow-lg shadow-amber-500/20">
-            <Truck className="h-8 w-8 sm:h-10 sm:w-10 text-gray-950" strokeWidth={2.2} />
+          {/* Official Brand Logo */}
+          <div className="flex items-center gap-3">
+            <img 
+              src="/branding/logo.jpg" 
+              alt="ALL INDIA DRIVER Logo" 
+              className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl sm:rounded-3xl object-contain bg-[#16161A] p-1 border-2 border-[#FFC400]/50 shadow-xl shadow-amber-500/20"
+            />
           </div>
 
           {/* Sub-brand Caption */}
-          <span className="text-sm sm:text-base font-extrabold text-[#FFC400] tracking-wide block pt-1">
-            All India Driver
+          <span className="text-sm sm:text-base font-black text-[#FFC400] tracking-wide block pt-1 uppercase">
+            All India Driver • Drive Safe Grow Together
           </span>
 
           {/* Large Bold Headline */}
@@ -767,10 +775,8 @@ export function OnboardingFlow({
                 <ArrowLeft className="h-4 w-4 text-[#FFC400]" />
                 <span className="hidden sm:inline">Back</span>
               </button>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-[#FFC400] flex items-center justify-center text-gray-950 shadow-sm">
-                  <Languages className="h-4 w-4 text-gray-950" />
-                </div>
+              <div className="flex items-center gap-2.5">
+                <img src="/branding/logo.jpg" alt="ALL INDIA DRIVER Logo" className="w-9 h-9 rounded-xl object-contain bg-[#16161A] p-0.5 border border-[#FFC400]/40 shadow-sm" />
                 <div>
                   <h2 className="text-base sm:text-lg font-black text-white font-display uppercase tracking-wide">
                     {i18n('selectLangTitle', 'अपनी भाषा चुनें')}
@@ -1011,12 +1017,14 @@ export function OnboardingFlow({
           </button>
         </div>
 
-        {/* Center/Left Content: Orange Truck Badge, Title & Subtitle */}
+        {/* Center/Left Content: Official Brand Logo, Title & Subtitle */}
         <div className="my-auto py-8 space-y-4 text-left">
-          {/* Orange Truck Badge */}
-          <div className="h-14 w-14 rounded-2xl bg-[#FFC400] flex items-center justify-center shadow-md mb-6">
-            <Truck className="h-7 w-7 text-gray-950" strokeWidth={2.2} />
-          </div>
+          {/* Official Brand Logo */}
+          <img 
+            src="/branding/logo.jpg" 
+            alt="ALL INDIA DRIVER Logo" 
+            className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl object-contain bg-[#16161A] p-1 border-2 border-[#FFC400]/50 shadow-lg mb-4"
+          />
 
           {/* Large Bold Headline */}
           <h1 className="text-2xl sm:text-3xl font-black text-white leading-tight font-display tracking-tight">
@@ -1164,14 +1172,20 @@ export function OnboardingFlow({
 
         {/* Center Content: Title, Subtitle & 3 Role Cards (Labour Removed) */}
         <div className="my-auto py-6 space-y-5 text-left">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white leading-tight font-display tracking-tight">
-              {t.roleTitle}
-            </h1>
-            <p className="text-xs sm:text-sm text-gray-400 font-normal leading-relaxed mt-1.5">
-              {t.roleSubtitle}
-            </p>
+          <div className="flex items-center gap-3">
+            <img src="/branding/logo.jpg" alt="ALL INDIA DRIVER Logo" className="w-12 h-12 rounded-2xl object-contain bg-[#16161A] p-1 border border-[#FFC400]/40 shadow-md shrink-0" />
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-[#FFC400] block">
+                ALL INDIA DRIVER • DRIVE SAFE GROW TOGETHER
+              </span>
+              <h1 className="text-xl sm:text-2xl font-black text-white leading-tight font-display tracking-tight">
+                {t.roleTitle}
+              </h1>
+            </div>
           </div>
+          <p className="text-xs sm:text-sm text-gray-400 font-normal leading-relaxed -mt-2">
+            {t.roleSubtitle}
+          </p>
 
           {/* Active Verified Google Account Card */}
           <div className="bg-[#16161A] border border-[#FFC400]/40 rounded-2xl p-3 flex items-center justify-between shadow-xs">
@@ -1388,7 +1402,7 @@ export function OnboardingFlow({
       <div className="flex-1 bg-[#0B0B0C] flex flex-col justify-between p-4 sm:p-6 min-h-screen overflow-y-auto" id="profile-setup-root">
         <div className="max-w-7xl mx-auto w-full">
           {/* Header */}
-          <div className="flex items-center gap-2 mb-4 mt-1">
+          <div className="flex items-center gap-3 mb-4 mt-1">
             <button 
               type="button"
               onClick={() => {
@@ -1399,9 +1413,10 @@ export function OnboardingFlow({
             >
               <ArrowLeft className="h-4 w-4 text-emerald-400" strokeWidth={2.5} />
             </button>
+            <img src="/branding/logo.jpg" alt="ALL INDIA DRIVER Logo" className="h-11 w-11 rounded-2xl object-contain bg-[#16161A] p-1 border border-[#FFC400]/40 shadow-[0_0_15px_rgba(16,185,129,0.35)] shrink-0" />
             <div className="text-left">
               <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest block">
-                OWNER ONBOARDING (Owner Green Theme)
+                ALL INDIA DRIVER • OWNER ONBOARDING
               </span>
               <h2 className="text-xl sm:text-2xl font-black text-white font-display leading-tight">
                 गाड़ी मालिक का विवरण / Owner Profile Setup

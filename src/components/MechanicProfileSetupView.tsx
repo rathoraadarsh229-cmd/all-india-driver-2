@@ -280,11 +280,14 @@ export const MechanicProfileSetupView: React.FC<Props> = ({
         
         {/* Banner Title & Step Progress Bar */}
         <div className="text-center space-y-1.5">
-          <div className="h-12 w-12 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center mx-auto shadow-[0_0_15px_rgba(168,85,247,0.35)] border border-purple-400/40">
-            <Wrench className="h-6 w-6 text-purple-400" />
+          <div className="flex items-center justify-center gap-3">
+            <img src="/branding/logo.jpg" alt="ALL INDIA DRIVER Logo" className="h-12 w-12 rounded-2xl object-contain bg-[#16161A] p-1 border border-[#FFC400]/40 shadow-[0_0_15px_rgba(168,85,247,0.35)]" />
+            <div className="h-12 w-12 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.35)] border border-purple-400/40">
+              <Wrench className="h-6 w-6 text-purple-400" />
+            </div>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black text-white font-display tracking-tight">
-            मैकेनिक / गैरेज रजिस्ट्रेशन
+          <h2 className="text-xl sm:text-2xl font-black text-white font-display tracking-tight uppercase">
+            ALL INDIA DRIVER • मैकेनिक रजिस्ट्रेशन
           </h2>
           <p className="text-xs text-purple-300 font-semibold">
             {currentStep === 1 && 'चरण 1: व्यक्तिगत और गैरेज का विवरण भरें'}
