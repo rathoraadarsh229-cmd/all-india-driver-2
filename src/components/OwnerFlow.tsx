@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { insforge } from '../insforge';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Search, ShieldCheck, Award, Star, MapPin, Truck, Phone, MessageSquare, 
@@ -40,6 +41,10 @@ interface OwnerFlowProps {
   selectedLanguage?: string;
   setSelectedLanguage?: (lang: string) => void;
   onOpenDonate?: () => void;
+  onOpenAiAssistant?: () => void;
+  onGoToWebsite?: () => void;
+  theme?: 'light' | 'dark';
+  onToggleTheme?: () => void;
 }
 
 // Helper to compute Haversine miles/km distance between coordinates
@@ -80,7 +85,11 @@ export default function OwnerFlow({
   authType = 'gmail',
   selectedLanguage = 'hi',
   setSelectedLanguage,
-  onOpenDonate
+  onOpenDonate,
+  onOpenAiAssistant,
+  onGoToWebsite,
+  theme,
+  onToggleTheme
 }: OwnerFlowProps) {
   const t = getT(selectedLanguage);
   const [activeTab, setActiveTab] = useState<DashboardTab>('home');
@@ -431,6 +440,12 @@ export default function OwnerFlow({
       {currentStep === 'owner-dashboard' && (
         <DashboardShell
           appName={t('appName', 'ALL INDIA DRIVER APP')}
+          roleKey="owner"
+          onOpenSOS={setShowNearbyMechanicModal ? () => setShowNearbyMechanicModal(true) : undefined}
+          onOpenAiAssistant={onOpenAiAssistant}
+          onGoToWebsite={onGoToWebsite}
+          theme={theme}
+          onToggleTheme={onToggleTheme}
           userName={ownerData.name || (authType === 'guest' ? 'गेस्ट गाड़ी मालिक' : 'गाड़ी मालिक')}
           userPhone={ownerData.phone || 'फ़ोन नंबर दर्ज नहीं'}
           userRoleTitle="गाड़ी मालिक"
@@ -443,9 +458,16 @@ export default function OwnerFlow({
           selectedLanguage={selectedLanguage}
           onLanguageChange={setSelectedLanguage}
           onSwitchRoleClick={() => setScreen('role-selection' as any)}
-          onLogoutClick={() => {
+          onLogoutClick={async () => {
+            try {
+              await insforge.auth.signOut();
+            } catch {}
             try {
               localStorage.removeItem('all_india_driver_is_authenticated');
+              localStorage.removeItem('all_india_driver_google_verified');
+              localStorage.removeItem('all_india_driver_auth_type');
+              localStorage.removeItem('all_india_driver_user_email');
+              localStorage.removeItem('all_india_driver_verified_email');
             } catch {}
             setScreen('login' as any);
           }}
