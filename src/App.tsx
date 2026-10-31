@@ -37,23 +37,16 @@ export default function App() {
   const [currentScreen, setCurrentScreen] = useState<AppScreen>(() => {
     try {
       const isAuth = localStorage.getItem('all_india_driver_is_authenticated') === 'true';
-      const savedAuthType = localStorage.getItem('all_india_driver_auth_type');
-      const hasVerifiedGoogleSession = localStorage.getItem('all_india_driver_google_verified') === 'true';
-
-      // Older builds marked any typed Gmail address as authenticated. Expire those
-      // unverified local-only sessions so they cannot bypass the real Google flow.
-      if (isAuth && savedAuthType === 'gmail' && !hasVerifiedGoogleSession) {
-        localStorage.removeItem('all_india_driver_is_authenticated');
-        localStorage.removeItem('all_india_driver_auth_type');
-        localStorage.removeItem('all_india_driver_user_email');
-        localStorage.removeItem('all_india_driver_verified_email');
-        localStorage.removeItem('aid_current_screen');
-      }
-
-      const hasValidLocalSession = isAuth && (savedAuthType !== 'gmail' || hasVerifiedGoogleSession);
+      const savedRole = localStorage.getItem('all_india_driver_selected_role');
       const saved = localStorage.getItem('aid_current_screen') as AppScreen;
-      if (hasValidLocalSession && saved && ['driver-dashboard', 'owner-dashboard', 'mechanic-dashboard'].includes(saved)) {
-        return saved;
+      
+      if (isAuth) {
+        if (saved && ['driver-dashboard', 'owner-dashboard', 'mechanic-dashboard'].includes(saved)) {
+          return saved;
+        }
+        if (savedRole === 'driver') return 'driver-dashboard';
+        if (savedRole === 'owner') return 'owner-dashboard';
+        if (savedRole === 'mechanic') return 'mechanic-dashboard';
       }
     } catch {}
     return 'intro';
