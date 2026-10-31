@@ -31,6 +31,7 @@ interface OnboardingFlowProps {
   setOwnerData: React.Dispatch<React.SetStateAction<OwnerData>>;
   authType?: UserAuthType;
   setAuthType?: (type: UserAuthType) => void;
+  onBackToWebsite?: () => void;
 }
 
 // ✇ Steering Wheel SVG Icon (Matching Mockup)
@@ -66,7 +67,8 @@ export function OnboardingFlow({
   ownerData,
   setOwnerData,
   authType = 'gmail',
-  setAuthType
+  setAuthType,
+  onBackToWebsite
 }: OnboardingFlowProps) {
   const [error, setError] = useState('');
   const [selectedCardRole, setSelectedCardRole] = useState<'driver' | 'owner' | 'mechanic'>(() => {
@@ -344,7 +346,7 @@ export function OnboardingFlow({
     }
   };
 
-  // Immediate Verified Google Login (Matching all-india-driver-1 flow)
+  // Immediate Verified Google Login
   const finishVerifiedGoogleLogin = (email: string) => {
     const verifiedEmail = (email || userEmail || 'rathoraadarsh229@gmail.com').trim();
 
@@ -371,17 +373,98 @@ export function OnboardingFlow({
     navigateToRoleScreen();
   };
 
-  const handleGoogleSignIn = (overrideEmail?: string) => {
+  // Real Google OAuth Handler (Opens Google's real sign-in screen)
+  const handleGoogleSignIn = async () => {
     setError('');
     setIsGoogleLoading(true);
 
-    const emailToUse = (overrideEmail || googleEmailInput || googleEmail || userEmail || 'rathoraadarsh229@gmail.com').trim();
+    if (!isInsForgeConfigured) {
+      setIsGoogleLoading(false);
+      setError('InsForge सेवा उपलब्ध नहीं है। कृपया सेटिंग्स जांचें।');
+      return;
+    }
 
-    // Instant smooth transition to Role Selection or Dashboard
-    setTimeout(() => {
-      finishVerifiedGoogleLogin(emailToUse);
-    }, 250);
+    let redirectTo = `${window.location.origin}${window.location.pathname}`;
+    if (!redirectTo.endsWith('/')) {
+      redirectTo += '/';
+    }
+
+    try {
+      if (userRole) localStorage.setItem('all_india_driver_selected_role', userRole);
+
+      const { data, error: oauthError } = await insforge.auth.signInWithOAuth('google', {
+        redirectTo,
+        additionalParams: { prompt: 'select_account' }
+      });
+
+      if (oauthError) {
+        throw oauthError;
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
+        return;
+      }
+      throw new Error('Google authorization URL प्राप्त नहीं हुआ।');
+    } catch (err: any) {
+      setIsGoogleLoading(false);
+      const msg = err?.message || 'Google sign-in शुरू नहीं हो पाया';
+      if (msg.toLowerCase().includes('redirect')) {
+        setError(`InsForge Redirect Error: कृपया InsForge Dashboard में Allowed Redirect URLs में "${redirectTo}" दर्ज करें। (${msg})`);
+      } else {
+        setError(`Google Sign-in: ${msg}`);
+      }
+    }
   };
+
+  // Check for OAuth return session when Google redirects back
+  useEffect(() => {
+    let cancelled = false;
+    const checkOAuthSession = async () => {
+      if (typeof window === 'undefined') return;
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('insforge_code') || params.get('code');
+      if (!code) return;
+
+      setIsGoogleLoading(true);
+      try {
+        if (code && typeof (insforge.auth as any).exchangeOAuthCode === 'function') {
+          try {
+            await (insforge.auth as any).exchangeOAuthCode(code);
+          } catch (e) {
+            console.warn('OAuth code exchange attempt:', e);
+          }
+        }
+
+        for (let attempt = 0; attempt < 10; attempt += 1) {
+          if (cancelled) return;
+          try {
+            const { data } = await insforge.auth.getCurrentUser();
+            const accountEmail = data?.user?.email;
+            if (accountEmail) {
+              const cleanUrl = new URL(window.location.href);
+              cleanUrl.searchParams.delete('insforge_code');
+              cleanUrl.searchParams.delete('code');
+              window.history.replaceState({}, document.title, cleanUrl.toString());
+
+              finishVerifiedGoogleLogin(accountEmail);
+              return;
+            }
+          } catch {}
+          await new Promise(r => setTimeout(r, 600));
+        }
+      } catch (err: any) {
+        if (!cancelled) {
+          setError(`Google Sign-in: ${err?.message || 'Verification failed'}`);
+        }
+      } finally {
+        if (!cancelled) setIsGoogleLoading(false);
+      }
+    };
+
+    void checkOAuthSession();
+    return () => { cancelled = true; };
+  }, []);
 
   // Multilingual translations
   const t = {
@@ -462,8 +545,20 @@ export function OnboardingFlow({
     return (
       <div className="min-h-screen bg-[#0B0B0C] text-white flex flex-col justify-between p-6 sm:p-8 select-none max-w-md mx-auto w-full font-sans transition-colors duration-200">
         
-        {/* Top Header with Language Switcher Pill [हिंदी | English] */}
-        <div className="flex items-center justify-end w-full pt-2">
+        {/* Top Header with Back to Website & Language Switcher Pill */}
+        <div className="flex items-center justify-between w-full pt-2">
+          {onBackToWebsite ? (
+            <button
+              type="button"
+              onClick={onBackToWebsite}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-400 hover:text-white px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 transition-all cursor-pointer"
+              title="वेबसाइट पर वापस जाएं"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>{selectedLanguage === 'hi' ? 'वेबसाइट' : 'Website'}</span>
+            </button>
+          ) : <div />}
+
           <div className="inline-flex items-center bg-[#1C1C24] border border-white/10 rounded-full p-1 shadow-inner">
             <button
               type="button"
@@ -814,70 +909,11 @@ export function OnboardingFlow({
             </div>
           )}
 
-          {/* Google Account Selector Card (Connected from all-india-driver-1) */}
-          <div className="space-y-4 pt-4 w-full">
-            <div className="bg-[#16161A] border border-white/10 rounded-2xl p-4 text-left">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-[#FFC400] text-gray-950 font-black text-sm flex items-center justify-center shadow-sm">
-                    {googleEmail ? googleEmail[0].toUpperCase() : 'G'}
-                  </div>
-                  <div>
-                    <span className="block text-sm font-black text-white leading-tight truncate max-w-[190px]">
-                      {googleEmail}
-                    </span>
-                    <span className="text-[11px] text-emerald-400 font-bold flex items-center gap-1 mt-0.5">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                      Google खाता (Verified Account)
-                    </span>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setShowSwitchEmail(!showSwitchEmail)}
-                  className="text-xs font-bold text-[#FFC400] hover:underline cursor-pointer px-2.5 py-1.5 bg-white/5 border border-white/10 rounded-xl"
-                >
-                  {showSwitchEmail ? 'बंद करें' : 'आईडी बदलें'}
-                </button>
-              </div>
-
-              {/* Custom Google Email Switcher Input */}
-              {showSwitchEmail && (
-                <div className="mt-3 pt-3 border-t border-white/10 space-y-2">
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wide">
-                    अन्य Gmail खाता दर्ज करें:
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="email"
-                      value={googleEmailInput}
-                      onChange={(e) => setGoogleEmailInput(e.target.value)}
-                      placeholder="username@gmail.com"
-                      className="flex-1 px-3 py-2 bg-black/40 border border-white/20 rounded-xl text-xs font-bold text-white focus:outline-none focus:border-[#FFC400]"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (googleEmailInput.trim().includes('@')) {
-                          setGoogleEmail(googleEmailInput.trim());
-                          setShowSwitchEmail(false);
-                          setGoogleEmailInput('');
-                        }
-                      }}
-                      className="px-3.5 py-2 bg-[#FFC400] text-gray-950 font-black text-xs rounded-xl cursor-pointer hover:bg-amber-400"
-                    >
-                      सेट करें
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Main Google Login Button */}
+          {/* Main Google Login Action matching Mockup */}
+          <div className="space-y-4 pt-6 w-full">
             <button
               type="button"
-              onClick={() => { void handleGoogleSignIn(googleEmail); }}
+              onClick={() => { void handleGoogleSignIn(); }}
               disabled={isGoogleLoading}
               className="w-full py-4 px-6 bg-white hover:bg-gray-100 active:scale-[0.99] text-gray-900 font-bold text-sm sm:text-base rounded-2xl flex items-center justify-center gap-3 transition-all cursor-pointer shadow-lg min-h-[52px] disabled:opacity-70"
             >
@@ -895,8 +931,8 @@ export function OnboardingFlow({
             {/* Subtext below Google button */}
             <p className="text-xs text-gray-400 text-center leading-relaxed pt-1">
               {selectedLanguage === 'hi'
-                ? 'Sirf Gmail se login hota hai. 1-क्लिक में सुरक्षित सत्यापन।'
-                : '1-click secure authentication with verified Gmail profile.'}
+                ? 'Sirf Gmail se login hota hai. Koi password yaad rakhne ki zaroorat nahi.'
+                : 'Sign in with Google. No password required.'}
             </p>
           </div>
         </div>
