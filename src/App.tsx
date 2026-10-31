@@ -20,22 +20,26 @@ import {
 import { fetchDriversFromInsForge } from './services/insforgeService';
 
 export default function App() {
-  // Master View Mode: 'app' (Default: Interactive Portal) or 'website' (Marketing Site)
+  // Master View Mode: 'website' (Default: Marketing Site) or 'app' (Interactive Portal)
   const [viewMode, setViewMode] = useState<'website' | 'app'>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      if (params.get('site') === '1' || window.location.hash === '#site') {
-        return 'website';
+      if (params.get('app') === '1' || window.location.hash === '#app' || params.has('code') || params.has('insforge_code')) {
+        return 'app';
       }
-      const saved = localStorage.getItem('aid_view_mode');
-      if (saved === 'website') return 'website';
     }
-    return 'app';
+    return 'website';
   });
 
   // App Navigation & Role States - Default to 'intro' (Welcome Screen) for onboarding
   const [currentScreen, setCurrentScreen] = useState<AppScreen>(() => {
     try {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('code') || params.has('insforge_code')) {
+          return 'login';
+        }
+      }
       const isAuth = localStorage.getItem('all_india_driver_is_authenticated') === 'true';
       const savedRole = localStorage.getItem('all_india_driver_selected_role');
       const saved = localStorage.getItem('aid_current_screen') as AppScreen;
@@ -340,6 +344,7 @@ export default function App() {
             setOwnerData={setOwnerData}
             authType={authType}
             setAuthType={setAuthType}
+            onBackToWebsite={() => setViewMode('website')}
           />
         )}
 
