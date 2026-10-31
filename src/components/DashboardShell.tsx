@@ -15,7 +15,12 @@ import {
   ChevronRight,
   Share2,
   Heart,
-  Truck
+  Truck,
+  Sparkles,
+  AlertTriangle,
+  Sun,
+  Moon,
+  type LucideIcon
 } from 'lucide-react';
 import { UserAuthBadge } from './UserAuthBadge';
 import { UserAuthType } from '../types';
@@ -31,6 +36,7 @@ interface DashboardShellProps {
   userName: string;
   userPhone?: string;
   userRoleTitle: string; // 'ड्राइवर' | 'गाड़ी मालिक' | 'मैकेनिक'
+  roleKey?: 'driver' | 'owner' | 'mechanic';
   authType?: UserAuthType;
   walletCredits: number;
   activeTab: DashboardTab;
@@ -42,6 +48,11 @@ interface DashboardShellProps {
   onSwitchRoleClick?: () => void;
   onLogoutClick?: () => void;
   onDonateClick?: () => void;
+  onOpenSOS?: () => void;
+  onOpenAiAssistant?: () => void;
+  onGoToWebsite?: () => void;
+  theme?: 'light' | 'dark';
+  onToggleTheme?: () => void;
   children: React.ReactNode;
 }
 
@@ -50,6 +61,7 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
   userName,
   userPhone,
   userRoleTitle,
+  roleKey = 'driver',
   authType = 'gmail',
   walletCredits,
   activeTab,
@@ -61,12 +73,45 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
   onSwitchRoleClick,
   onLogoutClick,
   onDonateClick,
+  onOpenSOS,
+  onOpenAiAssistant,
+  onGoToWebsite,
+  theme = 'dark',
+  onToggleTheme,
   children
 }) => {
   const t = getT(selectedLanguage);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
   const [legalDocType, setLegalDocType] = useState<LegalDocType>('terms');
+
+  const tabItems: { key: DashboardTab; label: string; icon: LucideIcon }[] = [
+    { key: 'home', label: roleKey === 'mechanic' ? 'नई रिक्वेस्ट' : 'डैशबोर्ड', icon: Home },
+    ...(roleKey === 'mechanic' ? [] : [{ key: 'convoy' as DashboardTab, label: 'काफिला', icon: Truck }]),
+    { key: 'search', label: roleKey === 'mechanic' ? 'सभी रिक्वेस्ट' : roleKey === 'owner' ? 'ड्राइवर खोजें' : 'नौकरी खोजें', icon: Search },
+    { key: 'profile', label: 'मेरी प्रोफाइल', icon: User },
+    { key: 'settings', label: 'सेटिंग्स', icon: Settings }
+  ];
+
+  const tabDescriptions: Record<DashboardTab, { title: string; description: string }> = {
+    home: roleKey === 'mechanic'
+      ? { title: 'नई सर्विस रिक्वेस्ट', description: 'ड्राइवर या गाड़ी मालिक से आई नई मदद की रिक्वेस्ट यहाँ देखें और जवाब दें।' }
+      : roleKey === 'owner'
+      ? { title: 'मालिक डैशबोर्ड', description: 'अपनी गाड़ियाँ, ड्राइवर से जुड़ी गतिविधियाँ और ज़रूरी शॉर्टकट यहाँ देखें।' }
+      : { title: 'ड्राइवर डैशबोर्ड', description: 'अपनी ड्यूटी की उपलब्धता, काम की स्थिति और ज़रूरी शॉर्टकट यहाँ देखें।' },
+    convoy: roleKey === 'owner'
+      ? { title: 'काफिला और यात्रा', description: 'यात्रा और काफिले से जुड़ी जानकारी यहाँ देखें।' }
+      : { title: 'काफिला / हमसफर', description: 'साथ चलने वाले ड्राइवरों और यात्रा समूहों की जानकारी यहाँ देखें।' },
+    search: roleKey === 'mechanic'
+      ? { title: 'सभी सर्विस रिक्वेस्ट', description: 'आपको मिली ब्रेकडाउन और सर्विस रिक्वेस्ट की सूची यहाँ देखें।' }
+      : roleKey === 'owner'
+      ? { title: 'ड्राइवर खोजें', description: 'स्थान और वाहन की ज़रूरत के अनुसार ड्राइवर खोजें और उनसे संपर्क करें।' }
+      : { title: 'नौकरी खोजें', description: 'उपलब्ध ड्राइविंग काम देखें और गाड़ी मालिक से सीधे संपर्क करें।' },
+    profile: { title: 'मेरी प्रोफाइल', description: 'अपना नाम, मोबाइल नंबर और अन्य प्रोफाइल जानकारी देखें या अपडेट करें।' },
+    settings: { title: 'सेटिंग्स', description: 'ऐप की भाषा और अपनी प्राथमिकताएँ बदलें।' }
+  };
+
+  const activeTabInfo = tabDescriptions[activeTab];
 
   return (
     <div className="flex-1 bg-[#0B0B0C] flex flex-col h-full w-full overflow-hidden select-none font-sans text-white">
@@ -76,7 +121,14 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
           
           {/* App title + User role */}
-          <div className="flex items-center gap-3 min-w-0">
+          <button
+            type="button"
+            onClick={onGoToWebsite}
+            disabled={!onGoToWebsite}
+            className="flex items-center gap-3 min-w-0 text-left cursor-pointer disabled:cursor-default"
+            title="मुख्य वेबसाइट पर जाएँ"
+            aria-label="मुख्य वेबसाइट पर जाएँ"
+          >
             <div className="h-10 w-10 rounded-xl bg-[#E10600] text-white font-black flex items-center justify-center shrink-0 shadow-md shadow-[#E10600]/30 text-base">
               <Truck className="h-5 w-5 text-white" />
             </div>
@@ -94,34 +146,45 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
                 <UserAuthBadge type={authType} size="xs" />
               </div>
             </div>
-          </div>
+          </button>
 
           {/* Quick Header Actions */}
           <div className="flex items-center gap-2 shrink-0">
-            {/* Support Us Button */}
-            {onDonateClick && (
+            {onToggleTheme && (
               <button
                 type="button"
-                onClick={onDonateClick}
-                className="min-h-[40px] px-3.5 bg-[#E10600] hover:bg-[#c20500] text-white rounded-xl text-xs sm:text-sm font-black flex items-center gap-1.5 transition-all shadow-md shadow-[#E10600]/25 cursor-pointer active:scale-95"
-                title="सपोर्ट करें (Support Us)"
+                onClick={onToggleTheme}
+                className="h-10 w-10 rounded-xl bg-[#1A1A22] hover:bg-[#25252e] text-white border border-white/10 flex items-center justify-center cursor-pointer"
+                title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+                aria-label={theme === 'dark' ? 'Light mode' : 'Dark mode'}
               >
-                <Heart className="h-4 w-4 fill-white stroke-[2.5]" />
-                <span className="font-sans">सपोर्ट करें</span>
+                {theme === 'dark' ? <Sun className="h-4 w-4 text-amber-300" /> : <Moon className="h-4 w-4 text-slate-200" />}
               </button>
             )}
-
-            {/* Share Button */}
-            <button
-              type="button"
-              onClick={() => setIsShareModalOpen(true)}
-              className="min-h-[40px] px-3 bg-[#1A1A22] hover:bg-[#25252e] text-[#E10600] rounded-xl text-xs sm:text-sm font-black flex items-center gap-1.5 transition-all border border-white/10 shadow-xs cursor-pointer"
-              title="ऐप शेयर करें"
-            >
-              <Share2 className="h-4 w-4 stroke-[2.5]" />
-              <span className="hidden sm:inline">शेयर</span>
-            </button>
-
+            {onOpenAiAssistant && (
+              <button
+                type="button"
+                onClick={onOpenAiAssistant}
+                className="min-h-[40px] px-3 bg-[#1A1A22] hover:bg-[#25252e] text-white rounded-xl text-xs font-black flex items-center gap-1.5 transition-all border border-white/10 cursor-pointer"
+                title="AI सहायता खोलें"
+                aria-label="AI सहायता खोलें"
+              >
+                <Sparkles className="h-4 w-4 text-amber-300" />
+                <span className="hidden sm:inline">AI सहायता</span>
+              </button>
+            )}
+            {onOpenSOS && (
+              <button
+                type="button"
+                onClick={onOpenSOS}
+                className="min-h-[40px] px-3 bg-red-700 hover:bg-red-800 text-white rounded-xl text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer"
+                title="आपातकालीन मैकेनिक सहायता"
+                aria-label="आपातकालीन मैकेनिक सहायता खोलें"
+              >
+                <AlertTriangle className="h-4 w-4" />
+                <span className="hidden sm:inline">SOS</span>
+              </button>
+            )}
             {/* Switch Role Button */}
             {onSwitchRoleClick && (
               <button
@@ -139,75 +202,41 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
         </div>
       </header>
 
-      {/* 2. DASHBOARD SUB-NAVIGATION TABS (CLEAN WEBSITE STYLE - NO MOBILE FLOATING BOTTOM BAR) */}
-      <div className="bg-[#16161A] border-b border-white/10 px-4 sm:px-8 py-2.5 shrink-0 z-10">
-        <div className="max-w-7xl mx-auto flex items-center justify-start gap-2 overflow-x-auto no-scrollbar">
-          <button
-            type="button"
-            onClick={() => setActiveTab('home')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-black flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === 'home'
-                ? 'bg-[#E10600] text-white shadow-md shadow-[#E10600]/30'
-                : 'bg-[#1A1A22] text-gray-300 hover:text-white hover:bg-[#25252e] border border-white/5'
-            }`}
-          >
-            <Home className="h-4 w-4" />
-            <span>अवलोकन (Dashboard)</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('convoy')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-black flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === 'convoy'
-                ? 'bg-[#E10600] text-white shadow-md shadow-[#E10600]/30'
-                : 'bg-[#1A1A22] text-gray-300 hover:text-white hover:bg-[#25252e] border border-white/5'
-            }`}
-          >
-            <Truck className="h-4 w-4" />
-            <span>काफिला (हमसफर)</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('search')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-black flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === 'search'
-                ? 'bg-[#E10600] text-white shadow-md shadow-[#E10600]/30'
-                : 'bg-[#1A1A22] text-gray-300 hover:text-white hover:bg-[#25252e] border border-white/5'
-            }`}
-          >
-            <Search className="h-4 w-4" />
-            <span>खोज / नौकरियां</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('profile')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-black flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === 'profile'
-                ? 'bg-[#E10600] text-white shadow-md shadow-[#E10600]/30'
-                : 'bg-[#1A1A22] text-gray-300 hover:text-white hover:bg-[#25252e] border border-white/5'
-            }`}
-          >
-            <User className="h-4 w-4" />
-            <span>प्रोफ़ाइल</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('settings')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-black flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === 'settings'
-                ? 'bg-[#E10600] text-white shadow-md shadow-[#E10600]/30'
-                : 'bg-[#1A1A22] text-gray-300 hover:text-white hover:bg-[#25252e] border border-white/5'
-            }`}
-          >
-            <Settings className="h-4 w-4" />
-            <span>सेटिंग्स</span>
-          </button>
+      {/* 2. ROLE-SPECIFIC NAVIGATION */}
+      <div className="bg-[#16161A] border-b border-white/10 px-3 sm:px-8 py-2.5 shrink-0 z-10">
+        <div className="max-w-7xl mx-auto flex items-center justify-start gap-2 overflow-x-auto no-scrollbar" role="navigation" aria-label="Dashboard navigation">
+          {tabItems.map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setActiveTab(key)}
+              aria-current={activeTab === key ? 'page' : undefined}
+              className={`px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap min-h-[42px] ${
+                activeTab === key
+                  ? 'bg-[#E10600] text-white shadow-md shadow-[#E10600]/30'
+                  : 'bg-[#1A1A22] text-gray-300 hover:text-white hover:bg-[#25252e] border border-white/5'
+              }`}
+            >
+              <Icon className="h-4 w-4 shrink-0" />
+              <span>{label}</span>
+              {activeTab === key && <span className="sr-only">वर्तमान पेज</span>}
+            </button>
+          ))}
         </div>
       </div>
+
+      {/* 3. CURRENT PAGE GUIDE */}
+      <section className="bg-[#101014] border-b border-white/10 px-4 sm:px-8 py-3 shrink-0" aria-live="polite">
+        <div className="max-w-7xl mx-auto flex items-start gap-3">
+          <div className="h-8 w-8 rounded-lg bg-[#E10600]/15 border border-[#E10600]/30 text-[#E10600] flex items-center justify-center shrink-0 mt-0.5">
+            <CheckCircle2 className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-sm sm:text-base font-black text-white leading-tight">{activeTabInfo.title}</h2>
+            <p className="text-xs sm:text-sm text-gray-400 leading-relaxed mt-0.5">{activeTabInfo.description}</p>
+          </div>
+        </div>
+      </section>
 
       {/* 3. MAIN SCROLLABLE CONTENT BODY (FULL WEBSITE WIDTH) */}
       <main className="flex-1 overflow-y-auto pb-12 overscroll-contain">
@@ -295,6 +324,26 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
                     <Shuffle className="h-4 w-4 text-[#E10600]" />
                   </button>
                 )}
+
+                {onDonateClick && (
+                  <button
+                    type="button"
+                    onClick={onDonateClick}
+                    className="w-full py-3.5 px-4 bg-[#E10600] hover:bg-[#c20500] text-white font-bold text-xs rounded-xl flex items-center justify-between border border-[#E10600]/40 transition-colors"
+                  >
+                    <span>ऐप को सपोर्ट करें / Support</span>
+                    <Heart className="h-4 w-4 fill-white" />
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setIsShareModalOpen(true)}
+                  className="w-full py-3.5 px-4 bg-[#1A1A22] hover:bg-[#25252e] text-white font-bold text-xs rounded-xl flex items-center justify-between border border-white/10 transition-colors"
+                >
+                  <span>ऐप शेयर करें / Share App</span>
+                  <Share2 className="h-4 w-4 text-[#E10600]" />
+                </button>
 
                 {onLogoutClick && (
                   <button
