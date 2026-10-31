@@ -144,6 +144,7 @@ export default function OwnerFlow({
   // States list representing standard driver states in mock data
   const [selectedState, setSelectedState] = useState<string>(ownerData?.state || 'Madhya Pradesh');
   const [selectedDistrict, setSelectedDistrict] = useState<string>(ownerData?.city || 'Balaghat');
+  const [selectedTehsil, setSelectedTehsil] = useState<string>(ownerData?.tehsil || '');
   const [selectedVillage, setSelectedVillage] = useState<string>('Ward-1 Civil Area');
   const [isOwnerFilterListening, setIsOwnerFilterListening] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(true);
@@ -156,6 +157,7 @@ export default function OwnerFlow({
     if (ownerData) {
       if (ownerData.state) setSelectedState(ownerData.state);
       if (ownerData.city) setSelectedDistrict(ownerData.city);
+      if (ownerData.tehsil) setSelectedTehsil(ownerData.tehsil);
     }
   }, [ownerData]);
   
@@ -1097,8 +1099,8 @@ export default function OwnerFlow({
                   </div>
 
                   <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-3">
-                    {/* Cascading State, District, Village Clean Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    {/* Cascading State, District, Tehsil, Village Clean Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
                       {/* State Filter */}
                       <div className="space-y-1">
                         <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block">
@@ -1129,6 +1131,20 @@ export default function OwnerFlow({
                             <option key={dist} value={dist}>{dist}</option>
                           ))}
                         </select>
+                      </div>
+
+                      {/* Tehsil Filter */}
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block">
+                          तहसील (Tehsil)
+                        </label>
+                        <input
+                          type="text"
+                          value={selectedTehsil}
+                          onChange={(e) => setSelectedTehsil(e.target.value)}
+                          placeholder="उदा. वारासिवनी, लालबर्रा..."
+                          className="w-full bg-slate-50 text-navy font-bold text-xs p-2.5 rounded-xl border border-slate-200 outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange text-left"
+                        />
                       </div>
 
                       {/* Village Filter with Mic */}
